@@ -1,5 +1,5 @@
 ## 表结构说明
-sql/
+```sql/
 ├── 01_schema/              # 数据库结构文件
 │   ├── 001_database_create.sql      # 创建数据库
 │   ├── 002_users_table.sql          # 用户表
@@ -24,7 +24,7 @@ sql/
 │   
 ├── install.sh              # 一键安装脚本
 └── README.md               # 数据库总体说明
-
+```
 
 ### 1. users (用户表)
 存储系统用户信息，包括登录凭证和个人信息。
