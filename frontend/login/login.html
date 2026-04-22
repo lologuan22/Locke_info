@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛克王国Wiki - 登录</title>
+    <link rel="stylesheet" href="./style.css">
+
+    <script type="module">
+        import { Auth } from "../js/utils/auth.js";
+        if (Auth.getToken()) {
+            globalThis.location.replace("../home/home.html");
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <h2>🐾 洛克王国 WIKI</h2>
+
+        <!-- 表单：onsubmit 阻止默认刷新，调用我们的JS函数 -->
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="input-group">
+                <label for="username">账号</label>
+                <input type="text" id="username" placeholder="请输入用户名" required>
+            </div>
+
+            <div class="input-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">登 录</button>
+
+            <!-- 用来显示“密码错误”等后端返回的提示 -->
+            <div id="msg"></div>
+        </form>
+    </div>
+
+
+    <script type="module" src="script.js"></script>
+
+</body>
+
+</html>

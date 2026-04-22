@@ -34,4 +34,4 @@ build/
 
 
 # 忽略本地环境配置（含密码）
-application-local.properties
+application-local.yml

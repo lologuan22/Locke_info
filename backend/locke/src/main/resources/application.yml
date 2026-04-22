@@ -1,0 +1,21 @@
+spring:
+  profiles:
+    active: local  
+  application:
+    name: locke
+  datasource:
+    url: jdbc:mysql://localhost:3306/pokedex_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # 解决时间返回给前端时的格式和时区问题
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+server:
+  port: 8080
+  address: 0.0.0.0
+
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true 
