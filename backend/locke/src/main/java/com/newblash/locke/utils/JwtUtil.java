@@ -40,4 +40,19 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    public boolean validateToken(String token) {
+        try {
+            parseToken(token);
+            return true;
+        } catch (Exception _) {
+            return false;
+        }
+    }
+
+    public Integer getUserIdFromToken(String token) {
+        Claims claims = parseToken(token);
+        return Integer.parseInt(claims.getSubject());
+    }
+
 }

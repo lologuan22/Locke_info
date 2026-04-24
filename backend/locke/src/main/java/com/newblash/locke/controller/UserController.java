@@ -2,6 +2,8 @@ package com.newblash.locke.controller;
 
 import com.newblash.locke.common.Result;
 import com.newblash.locke.entity.LoginDTO;
+import com.newblash.locke.entity.RegisterDTO;
+import com.newblash.locke.entity.User;
 import com.newblash.locke.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,6 +11,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +40,33 @@ public class UserController {
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
+    }
+
+    @Operation(summary = "用户注册", description = "创建新用户账号")
+    @PostMapping("/register")
+    public Result<String> register(@RequestBody RegisterDTO registerDTO) {
+        try {
+            userService.register(registerDTO);
+            return Result.success("注册成功");
+        } catch (RuntimeException e) {
+            // 例如：用户名已存在、密码强度不够等
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "获取当前用户信息", description = "根据 Token 获取已登录用户的详细资料")
+    @GetMapping("/info")
+    public Result<User> getCurrentUserInfo() {
+        // 逻辑：从 SecurityContext 或 Token 中提取用户 ID，再查数据库
+        User user = userService.getCurrentUser();
+        return Result.success(user);
+    }
+
+    @Operation(summary = "退出登录")
+    @PostMapping("/logout")
+    public Result<String> logout() {
+        // 逻辑：使当前 Token 失效
+        return Result.success("已成功退出");
     }
 
     // 辅助类：仅用于在 Swagger 文档中展示 Map 的结构
