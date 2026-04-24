@@ -2,39 +2,42 @@ package com.newblash.locke.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.AllArgsConstructor;
+
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import com.newblash.locke.config.JwtProperties;
+
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
+@AllArgsConstructor
 public class JwtUtil {
-    private static final String SECRET_KEY = "locke_wiki_secret_key_must_be_long_enough_123456";
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 7; // 7天过期
+    JwtProperties jwtProperties;
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+    private SecretKey getSigningKey() {
+
+        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    // 生成Token
     public String generateToken(Integer userId, String username) {
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .subject(userId.toString())
                 .claim("username", username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtProperties.getExpiration()))
+                .signWith(getSigningKey())
                 .compact();
     }
 
-    // 解析Token
     public Claims parseToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }

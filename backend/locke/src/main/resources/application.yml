@@ -3,13 +3,12 @@ spring:
     active: local  
   application:
     name: locke
-  datasource:
-    url: jdbc:mysql://localhost:3306/pokedex_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  # 解决时间返回给前端时的格式和时区问题
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+  output:
+    ansi:
+      enabled: always
 
 server:
   port: 8080
@@ -19,3 +18,26 @@ server:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true 
+
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  packages-to-scan: com.newblash.locke.controller
+
+jwt:
+  secret: ${JWT_SECRET:locke_wiki_secret_key_fixed_version_2026_provide_long_enough_string}
+  expiration: 604800000
+
+# debug: true
+logging:
+  file:
+    name: startup.log
+
+file:
+  upload-path: D:/locke-uploads/  # 或者 Linux 的 /opt/uploads/
+  access-path: /api/images/** # 访问前缀

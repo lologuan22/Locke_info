@@ -1,124 +1,38 @@
 package com.newblash.locke.entity;
 
-
 import lombok.Data;
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @Data
-@TableName("pokemons")
+@TableName("pokemon")
+@Schema(description = "宠物基础信息实体")
 public class Pokemon {
-    
-    /**
-     * 宠物ID，自增
-     */
-    @TableId
+
+    @TableId(type = IdType.AUTO)
+    @Schema(description = "数据库主键ID", example = "1")
     private Integer id;
 
-    /**
-     * 宠物编号（如#001）
-     */
-    private String number;
+    @Schema(description = "宠物图鉴编号", example = "133")
+    private Integer number;
 
-    /**
-     * 宠物名称
-     */
+    @Schema(description = "宠物名称", example = "迪莫")
     private String name;
 
-    /**
-     * 中文名
-     */
-    private String chineseName;
-
-    /**
-     * 主属性
-     */
+    @Schema(description = "主系别/属性", example = "光系")
     private String type1;
 
-    /**
-     * 副属性
-     */
-    private String type2;
+    @Schema(description = "身高 (m)", example = "1.5")
+    private Double height;
 
-    /**
-     * 是否稀有宠物
-     */
-    private Boolean isRare;
+    @Schema(description = "体重 (kg)", example = "26.8")
+    private Double weight;
 
-    /**
-     * 是否VIP宠物
-     */
-    private Boolean isVip;
-
-    /**
-     * 是否传说宠物
-     */
-    private Boolean isLegendary;
-
-    /**
-     * 是否天界觉醒宠物
-     */
-    private Boolean isAwakening;
-
-    /**
-     * 是否多元进化宠物
-     */
-    private Boolean isMultipleEvolution;
-
-    /**
-     * 是否王国BOSS
-     */
-    private Boolean isKingdomBoss;
-
-    /**
-     * 精力
-     */
-    private Integer baseHp;
-
-    /**
-     * 攻击
-     */
-    private Integer baseAttack;
-
-    /**
-     * 防御
-     */
-    private Integer baseDefense;
-
-    /**
-     * 魔攻
-     */
-    private Integer baseSpAttack;
-
-    /**
-     * 魔抗
-     */
-    private Integer baseSpDefense;
-
-    /**
-     * 速度
-     */
-    private Integer baseSpeed;
-
-    /**
-     * 宠物图片URL
-     */
-    private String imageUrl;
-
-    /**
-     * 宠物描述
-     */
+    @Schema(description = "宠物背景描述")
     private String description;
 
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createdAt;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updatedAt;
+    @Schema(description = "图片相对路径或URL", example = "/api/images/dimo.png")
+    private String imageUrl;
 }

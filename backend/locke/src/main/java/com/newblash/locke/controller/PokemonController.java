@@ -1,85 +1,56 @@
 package com.newblash.locke.controller;
 
-import org.springframework.web.bind.annotation.*;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.newblash.locke.common.Result;
 import com.newblash.locke.entity.Pokemon;
 import com.newblash.locke.service.PokemonService;
-
+import com.newblash.locke.vo.PokemonDetailVO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "宠物精灵管理", description = "提供宝可梦数据的查询与详情获取接口")
 @RestController
-@RequestMapping("/api/pokemons") // 统一路由前缀
+@RequestMapping("/api/pokemons")
 public class PokemonController {
 
-    @Resource   
+    @Resource
     private PokemonService pokemonService;
 
-    /**
-     * 1. 获取宠物列表（支持条件过滤）
-     * GET /api/pokemons?type1=草&isLegendary=true
-     */
+    @Operation(summary = "获取宠物列表", description = "支持根据类型过滤和名称模糊搜索，结果按编号升序排列")
     @GetMapping
-    public List<Pokemon> getList(
-            @RequestParam(required = false) String type1,
-            @RequestParam(required = false) Boolean isLegendary,
-            @RequestParam(required = false) Boolean isRare) {
+    public Result<List<Pokemon>> getList(
+            @Parameter(description = "属性类型 (如: Fire, Water)", example = "Fire") 
+            @RequestParam(required = false) String type,
+            
+            @Parameter(description = "精灵名称 (模糊搜索)", example = "Pikachu") 
+            @RequestParam(required = false) String name) {
 
-        // 使用 MP 的链式查询构造器
         LambdaQueryWrapper<Pokemon> wrapper = new LambdaQueryWrapper<>();
-        
-        // 如果前端传了 type1 参数，就加上条件；没传就不加（查全部）
-        wrapper.eq(type1 != null && !type1.isEmpty(), Pokemon::getType1, type1)
-               .eq(isLegendary != null, Pokemon::getIsLegendary, isLegendary)
-               .eq(isRare != null, Pokemon::getIsRare, isRare)
-               .orderByAsc(Pokemon::getNumber); // 默认按编号排序
+        wrapper.like(name != null, Pokemon::getName, name)
+                .eq(type != null, Pokemon::getType1, type)
+                .orderByAsc(Pokemon::getNumber);
 
-        return pokemonService.getList(wrapper);
+        List<Pokemon> list = pokemonService.list(wrapper);
+        return Result.success(list);
     }
 
-    /**
-     * 2. 根据 ID 获取单个宠物详情
-     * GET /api/pokemons/1
-     */
+    @Operation(summary = "获取宠物聚合详情", description = "根据数据库ID获取宝可梦的详细属性、技能及进化链信息")
     @GetMapping("/{id}")
-    public Pokemon getById(@PathVariable Integer id) {
-        return pokemonService.getById(id);
-    }
+    public Result<PokemonDetailVO> getDetail(
+            @Parameter(description = "宠物ID (自增主键)", example = "1") 
+            @PathVariable Integer id) {
+        
+        PokemonDetailVO detail = pokemonService.getPokemonDetail(id);
 
-    /**
-     * 3. 新增宠物
-     * POST /api/pokemons
-     * 使用 @RequestBody 接收前端传来的 JSON 数据
-     */
-    @PostMapping
-    public String add(@RequestBody Pokemon pokemon) {
-        pokemonService.addPokemon(pokemon);
-        // 插入成功后，MP会自动将自增ID回填到 pokemon 对象中
-        return "新增成功，宠物ID为: " + pokemon.getId(); 
-    }
+        if (detail == null) {
+            return Result.error("未找到该宠物信息");
+        }
 
-    /**
-     * 4. 修改宠物信息（动态更新）
-     * PUT /api/pokemons/1
-     * 前端传什么字段，就只更新什么字段（MP自动忽略null）
-     */
-    @PutMapping("/{id}")
-    public String update(@PathVariable Integer id, @RequestBody Pokemon pokemon) {
-        // 防止前端恶意修改ID，强制设置路径上的ID
-        pokemon.setId(id); 
-        pokemonService.updatePokemonStats(pokemon);
-        return "更新成功";
-    }
-
-    /**
-     * 5. 删除宠物
-     * DELETE /api/pokemons/1
-     */
-    @DeleteMapping("/{id}")
-    public String delete(@PathVariable Integer id) {
-        pokemonService.deletePokemon(id);
-        return "删除成功";
+        return Result.success(detail);
     }
 }

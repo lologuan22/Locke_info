@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
 
     @Override
-    public void addCorsMappings(@NonNull CorsRegistry registry) {
+    public void addCorsMappings( @NonNull CorsRegistry registry) {
         registry.addMapping("/**") // 拦截所有请求
                 .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 允许的请求方法
