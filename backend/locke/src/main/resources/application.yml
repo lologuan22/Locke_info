@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: local  
+    active: local
   application:
     name: locke
   jackson:
@@ -14,11 +14,10 @@ server:
   port: 8080
   address: 0.0.0.0
 
-
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: true 
-
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:/mapper/**/*.xml
 
 springdoc:
   api-docs:
@@ -39,5 +38,5 @@ logging:
     name: startup.log
 
 file:
-  upload-path: D:/locke-uploads/  # 或者 Linux 的 /opt/uploads/
-  access-path: /api/images/** # 访问前缀
+  upload-path: D:/locke-uploads/
+  access-path: /api/images/**

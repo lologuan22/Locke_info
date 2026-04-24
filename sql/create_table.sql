@@ -115,7 +115,16 @@ CREATE TABLE `pokemon_skill_relation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物技能关联表';
 
 
-
+CREATE TABLE `user_pokemon` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `user_id` int NOT NULL COMMENT '用户ID，关联users表id',
+  `pokemon_id` int NOT NULL COMMENT '宠物ID，关联pokemon表id',
+  `caught_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '获得时间',
+  PRIMARY KEY (`id`),
+  -- 建立索引以优化查询性能
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_pokemon_id` (`pokemon_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='用户背包表';
 
 
 -- DROP TABLE pokemons;

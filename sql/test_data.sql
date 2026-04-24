@@ -30,3 +30,16 @@ VALUES (2, 45, 49, 49, 65, 65, 45);
 
 
 UPDATE pokemon SET image_url = '/api/images/dimo.gif' WHERE id = 1;
+
+
+
+-- 1. 为 ID 为 1 的用户添加迪莫 (Pokemon ID: 1)
+INSERT INTO `user_pokemon` (`user_id`, `pokemon_id`, `caught_at`) 
+VALUES (1, 1, NOW());
+
+-- 2. 为 ID 为 1 的用户添加喵喵 (Pokemon ID: 2)
+INSERT INTO `user_pokemon` (`user_id`, `pokemon_id`, `caught_at`) 
+VALUES (1, 2, NOW());
+
+-- 3. (可选) 为 ID 为 2 的用户只添加一只喵喵，用于测试权限隔离
+INSERT INTO `user_pokemon` (`user_id`, `pokemon_id`, `caught_at`) VALUES (2, 2, NOW());
