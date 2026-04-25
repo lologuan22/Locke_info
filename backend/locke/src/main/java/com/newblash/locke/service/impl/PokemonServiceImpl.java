@@ -9,6 +9,8 @@ import com.newblash.locke.mapper.PokemonStatsMapper;
 import com.newblash.locke.mapper.SkillMapper;
 import com.newblash.locke.service.PokemonService;
 import com.newblash.locke.vo.PokemonDetailVO;
+import com.newblash.locke.vo.SkillVO;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +40,7 @@ public class PokemonServiceImpl extends ServiceImpl<PokemonMapper, Pokemon> impl
         PokemonStats stats = statsMapper.selectById(id);
 
         // 3. 获取技能列表 (通过关联查询获取该宠物的技能)
-        // 注意：这里假设你在 SkillMapper 中写好了 SQL 关联查询逻辑
-        List<Skill> skills = skillMapper.getSkillsByPokemonId(id);
+        List<SkillVO> skills = skillMapper.getSkillsByPokemonId(id);
 
         // 4. 组装 VO (View Object)
         PokemonDetailVO vo = new PokemonDetailVO();

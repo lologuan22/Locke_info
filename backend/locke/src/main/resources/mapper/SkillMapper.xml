@@ -2,19 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.newblash.locke.mapper.SkillMapper">
 
-    <select id="getSkillsByPokemonId" resultType="com.newblash.locke.entity.Skill">
-        SELECT 
-            s.id, 
-            s.name, 
-            s.type, 
-            s.category, 
-            s.power, 
-            s.pp, 
-            s.effect
-        FROM skill s
-        INNER JOIN pokemon_skill_relation psr ON s.id = psr.skill_id
-        WHERE psr.pokemon_id = #{pokemonId}
-        ORDER BY psr.require_level ASC
-    </select>
+<select id="getSkillsByPokemonId" resultType="com.newblash.locke.vo.SkillVO">
+    SELECT 
+        s.*, 
+        psr.require_level  FROM skill s
+    INNER JOIN pokemon_skill_relation psr ON s.id = psr.skill_id
+    WHERE psr.pokemon_id = #{pokemonId}
+    ORDER BY psr.require_level ASC
+</select>
 
 </mapper>

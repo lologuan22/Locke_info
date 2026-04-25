@@ -16,7 +16,7 @@ public class User {
     @Schema(description = "用户名", example = "admin")
     private String username;
 
-    @Schema(description = "密码 (加密存储)", accessMode = Schema.AccessMode.WRITE_ONLY)
+    @Schema(description = "密码", accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
 
     @Schema(description = "电子邮箱", example = "example@domain.com")

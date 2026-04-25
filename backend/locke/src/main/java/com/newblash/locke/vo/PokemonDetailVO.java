@@ -1,6 +1,5 @@
 package com.newblash.locke.vo;
 
-import com.newblash.locke.entity.Skill;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.List;
 public class PokemonDetailVO {
 
     // --- 基础信息（来自 Pokemon 表） ---
-    
+
     @Schema(description = "宠物ID", example = "1")
     private Integer id;
 
@@ -36,20 +35,16 @@ public class PokemonDetailVO {
     private String imageUrl;
 
     // --- 属性信息（来自 PokemonStats 表） ---
-    
-    @Schema(
-        description = "雷达图数值列表。固定顺序：[精力, 攻击, 防御, 魔攻, 魔抗, 速度]", 
-        example = "[100, 80, 85, 110, 95, 120]"
-    )
-    private List<Integer> radarData; 
-    
-    // --- 技能列表（来自 Skill 表） ---
-    
-    @Schema(description = "宠物可学习的技能列表详情")
-    private List<Skill> skills;
 
+    @Schema(description = "雷达图数值列表。固定顺序：[精力, 攻击, 防御, 魔攻, 魔抗, 速度]", example = "[100, 80, 85, 110, 95, 120]")
+    private List<Integer> radarData;
+
+    // --- 技能列表（来自 Skill 表） ---
+
+    @Schema(description = "宠物可学习的技能列表详情")
+    private List<SkillVO> skills;
     // --- 其他显示逻辑 ---
-    
+
     @Schema(description = "系统提供的养成/性格建议", example = "建议性格：保守。建议学习光系爆发技能。")
     private String suggestion;
 }

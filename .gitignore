@@ -37,3 +37,4 @@ build/
 application-local.yml
 
 *.log
+*.log.*
