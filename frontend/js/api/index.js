@@ -12,6 +12,21 @@ export const logout = () => request.post('/api/user/logout');
 // 获取当前用户信息
 export const getCurrentUserInfo = () => request.get('/api/user/info');
 
+// 更新个人资料
+export const updateProfile = (userData) => request.put('/api/user/profile', userData);
+
+// 上传头像图片
+export const uploadAvatar = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request.post('/api/user/upload/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+};
+
+
 /**
  * 【宠物模块】
  */

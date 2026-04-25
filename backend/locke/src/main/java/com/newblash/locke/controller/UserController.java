@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -67,6 +70,25 @@ public class UserController {
     public Result<String> logout() {
         // 逻辑：使当前 Token 失效
         return Result.success("已成功退出");
+    }
+
+    @Operation(summary = "更新个人资料", description = "修改当前登录用户的昵称、头像等信息")
+    @PutMapping("/profile")
+    public Result<User> updateProfile(@RequestBody User user) {
+        User updatedUser = userService.updateUserProfile(user);
+        return Result.success(updatedUser);
+    }
+
+    @Operation(summary = "上传头像图片", description = "上传图片并返回可访问的 URL")
+    @PostMapping("/upload/avatar")
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+            // 逻辑：1. 校验文件格式；2. 保存到本地或云端；3. 返回访问路径
+            String avatarUrl = userService.uploadFile(file);
+            return Result.success(avatarUrl);
+        } catch (Exception e) {
+            return Result.error("头像上传失败：" + e.getMessage());
+        }
     }
 
     // 辅助类：仅用于在 Swagger 文档中展示 Map 的结构

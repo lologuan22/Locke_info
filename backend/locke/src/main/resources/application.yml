@@ -9,6 +9,10 @@ spring:
   output:
     ansi:
       enabled: always
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
 
 server:
   port: 8080
@@ -38,5 +42,7 @@ logging:
     name: startup.log
 
 file:
-  upload-path: D:/locke-uploads/
+  upload-path: D:/locke-uploads/common/
+  avatar-path: D:/locke-uploads/avatars/
   access-path: /api/images/**
+  avatar-access-path: /api/avatars/**
