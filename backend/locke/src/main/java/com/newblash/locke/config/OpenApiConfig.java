@@ -20,7 +20,7 @@ public class OpenApiConfig {
                         .title("Locke 项目 API 接口文档")
                         .description("基于 Springdoc 和 Knife4j 的后端接口定义")
                         .version("v1.0.0")
-                        .contact(new Contact().name("NewBlash").email("your-email@example.com")))
+                        .contact(new Contact().name("NewBlash").email("lologuan22@gmail.com")))
 
                 // 2. 安全配置
                 .components(new Components()
