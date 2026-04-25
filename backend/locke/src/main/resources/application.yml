@@ -1,0 +1,48 @@
+spring:
+  profiles:
+    active: local
+  application:
+    name: locke
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  output:
+    ansi:
+      enabled: always
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+server:
+  port: 8080
+  address: 0.0.0.0
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:/mapper/**/*.xml
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  packages-to-scan: com.newblash.locke.controller
+
+jwt:
+  secret: ${JWT_SECRET:locke_wiki_secret_key_fixed_version_2026_provide_long_enough_string}
+  expiration: 604800000
+
+# debug: true
+logging:
+  file:
+    name: startup.log
+
+file:
+  upload-path: D:/locke-uploads/common/
+  avatar-path: D:/locke-uploads/avatars/
+  access-path: /api/images/**
+  avatar-access-path: /api/avatars/**

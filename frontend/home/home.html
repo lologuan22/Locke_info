@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>后端逻辑验证 - 洛克王国 WIKI</title>
+  <style>
+    /* 极致简约布局：仅分块 */
+    body {
+      font-family: monospace;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    header,
+    main,
+    footer {
+      border: 1px solid #000;
+      padding: 8px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .search-group {
+      border: 1px solid #999;
+      padding: 5px;
+      margin-top: 5px;
+      display: inline-block;
+    }
+
+    .list-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .card {
+      border: 1px solid #000;
+      width: 140px;
+      padding: 5px;
+      text-align: center;
+    }
+
+    .img-placeholder {
+      border: 1px dashed #ccc;
+      height: 80px;
+      line-height: 80px;
+      margin-bottom: 5px;
+    }
+
+    .btn {
+      cursor: pointer;
+      border: 1px solid #333;
+      background: #eee;
+      padding: 2px 5px;
+    }
+
+    .msg {
+      color: blue;
+    }
+
+    /* 用于显示 API 返回的状态消息 */
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="row">
+      <button class="btn" onclick="loadList()">图鉴大全 (刷新列表)</button>
+
+      <div id="auth-box">
+        <span id="user-info">状态: 检查中...</span>
+        <button class="btn" onclick="handleLogin()">登录测试</button>
+      </div>
+
+      <button class="btn" onclick="loadBackpack()">我的背包 (登录后点)</button>
+    </div>
+
+    <div class="search-group">
+      <input type="text" id="nameSearch" placeholder="搜索名称...">
+      <input type="text" id="typeSearch" placeholder="筛选属性...">
+      <button class="btn" onclick="loadList()">查询</button>
+    </div>
+  </header>
+
+  <main>
+    <strong>数据展示区: </strong> <span id="api-msg" class="msg">等待操作...</span>
+    <div class="list-area" id="display-list">
+      <p>暂无数据</p>
+    </div>
+  </main>
+
+  <footer>
+    <div id="page-info">当前页: 1 | 总计: -- </div>
+    <button class="btn" onclick="changePage(-1)">上一页</button>
+    <button class="btn" onclick="changePage(1)">下一页</button>
+  </footer>
+
+  <script type="module">
+    import * as api from '../js/api/index.js';
+
+    let currentPage = 1;
+
+    // 1. 验证获取用户信息
+    async function checkUser() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('user-info').innerText = '未登录';
+        return;
+      }
+      try {
+        const res = await api.getCurrentUserInfo();
+        if (res.code === 200) {
+          document.getElementById('user-info').innerText = `用户: ${res.data.username}`;
+        }
+      } catch (e) {
+        document.getElementById('user-info').innerText = '登录已失效';
+      }
+    }
+
+    // 渲染列表到页面
+
+    const renderList = (list) => {
+      const container = document.getElementById('display-list');
+      // 定义后端基础路径
+      const BASE_URL = 'http://localhost:8080';
+
+      if (list.length === 0) {
+        container.innerHTML = '<p>暂无数据</p>';
+        return;
+      }
+
+      const html = list.map(item => {
+        // 拼接完整的图片地址
+        // 假设 item.imageUrl 返回的是 "/api/images/pet001.png"
+        const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '默认占位图地址';
+
+        return `
+      <div class="card">
+        <div class="img-placeholder">
+          <img src="${fullImgUrl}" alt="${item.name}" style="width:100%; height:100%; object-fit:contain;">
+        </div>
+        <div><strong>${item.name}</strong></div>
+        <div>属性: ${item.type1}</div>
+      <div style="margin-top:5px;">
+        <button class="btn" onclick="showDetail(${item.id})">详情</button>
+        <button class="btn" onclick="checkOwned(${item.id})">持有情况</button>
+      </div>
+      </div>
+    `;
+      }).join('');
+
+      container.innerHTML = html;
+    };
+
+    // 记得要把函数挂载到 window，或者确保它在 loadList 作用域内可见
+    window.renderList = renderList;
+
+    // 2. 列表加载
+    const loadList = async () => {
+      // 获取值并去掉首尾空格
+      const nameVal = document.getElementById('nameSearch').value.trim();
+      const typeVal = document.getElementById('typeSearch').value.trim();
+
+      document.getElementById('api-msg').innerText = '正在请求列表...';
+
+      // 构造参数对象：只有当有值时才传入
+      const params = {
+        current: currentPage,
+        size: 10,
+        // 如果是空字符串，则设为 undefined，axios 会自动过滤掉该键值对
+        name: nameVal || undefined,
+        type: typeVal || undefined
+      };
+      try {
+        const res = await api.getPokemonList(params);
+        // 适配后端的 Page 对象
+        renderList(res.data.records || []);
+        document.getElementById('page-info').innerText = `当前页: ${res.data.current} | 总计: ${res.data.total}`;
+        document.getElementById('api-msg').innerText = '获取列表成功';
+      } catch (e) {
+        document.getElementById('api-msg').innerText = '请求失败，请检查控制台';
+      }
+    };
+
+    // 3. 分页处理
+    const changePage = (delta) => {
+      currentPage += delta;
+      if (currentPage < 1) currentPage = 1;
+      loadList();
+    };
+
+    // 4. 模拟登录 (测试用)
+    const handleLogin = () => {
+      // 这里通常是跳转到 login.html，或者弹窗
+      window.location.href = '../login/login.html';
+    };
+
+    // --- 将函数挂载到 window，确保 HTML onclick 能触发 ---
+    window.loadList = loadList;
+    window.changePage = changePage;
+    window.handleLogin = handleLogin;
+    window.checkOwned = (id) => alert('查询 ID 为 ' + id + ' 的宠物是否在背包');
+    // 修改查看详情的跳转逻辑
+    window.showDetail = (id) => {
+      // 使用 URLSearchParams 风格传递 id 参数
+      window.location.href = `../details/details.html?id=${id}`;
+    };
+    // 初始化
+    checkUser();
+    loadList();
+  </script>
+</body>
+
+</html>
