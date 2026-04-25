@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "宠物精灵管理", description = "提供宝可梦数据的查询与详情获取接口")
@@ -37,9 +39,9 @@ public class PokemonController {
 
         // 2. 构造查询条件
         LambdaQueryWrapper<Pokemon> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(name != null, Pokemon::getName, name) 
-                .eq(type != null, Pokemon::getType1, type) 
-                .orderByAsc(Pokemon::getNumber); 
+        wrapper.like(StringUtils.hasText(name), Pokemon::getName, name)
+                .eq(StringUtils.hasText(type), Pokemon::getType1, type)
+                .orderByAsc(Pokemon::getNumber);
 
         // 3. 执行分页查询
         Page<Pokemon> resultPage = pokemonService.page(pageParam, wrapper);

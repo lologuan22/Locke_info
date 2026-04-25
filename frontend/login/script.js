@@ -1,67 +1,53 @@
-import { loginApi } from "../js/api/user.js";
+// 路径确保指向你提供的 index.js
+import { login } from "../js/api/index.js"; 
 import { Auth } from "../js/utils/auth.js";
 
-// 如果已经登录了，直接踢回主页
+const msgDiv = document.getElementById("msg");
+const btn = document.getElementById("loginBtn");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
 
+async function handleLogin(event) {
+  event.preventDefault();
 
-function initLoginModule() {
-  const msgDiv = document.getElementById("msg");
-  const btn = document.getElementById("loginBtn");
-  const usernameInput = document.getElementById("username");
-  const passwordInput = document.getElementById("password");
+  const username = usernameInput.value;
+  const password = passwordInput.value;
 
-  // 抽离按钮状态切换逻辑
-  const toggleBtn = (isLoading) => {
-    btn.disabled = isLoading;
-    btn.innerText = isLoading ? "登录中..." : "登 录";
-  };
+  btn.disabled = true;
+  btn.innerText = "登录中...";
+  msgDiv.innerText = "";
 
-  // 抽离消息提示逻辑
-  const showMsg = (text, color) => {
-    msgDiv.style.color = color;
-    msgDiv.innerText = text;
-  };
+  try {
+    // 关键：index.js 里的 login 接收的是一个对象 (loginDTO)
+    // 之前 400 错误很可能是因为参数格式没对上后端要求的 @RequestBody
+    const res = await login({ username, password });
 
-  // 核心登录逻辑
-  async function handleLogin(event) {
-    event.preventDefault();
+    if (res.code === 200) {
+      msgDiv.style.color = "#27AE60";
+      msgDiv.innerText = "登录成功，正在跳转...";
 
-    const username = usernameInput.value;
-    const password = passwordInput.value;
+      // 存储 Token 和用户信息
+      Auth.setToken(res.data.token);
+      Auth.setUser(res.data.userInfo);
 
-    toggleBtn(true);
-    showMsg("", "");
-
-    try {
-      const res = await loginApi(username, password);
-
-      if (res.code === 200) {
-        showMsg("登录成功，正在跳转...", "#27AE60");
-
-        // 调用封装好的存储方法
-        Auth.setToken(res.data.token);
-        Auth.setUser(res.data.userInfo);
-
-        const redirect = new URLSearchParams(window.location.search).get(
-          "redirect",
-        );
-
-        setTimeout(() => {
-          globalThis.location.href = redirect
-            ? decodeURIComponent(redirect)
-            : "../home/home.html";
-        }, 1000);
-      } else {
-        showMsg(res.message, "#E74C3C");
-        toggleBtn(false);
-      }
-    } catch (error) {
-      showMsg("网络错误，请检查后端是否启动！", "#E74C3C");
-      toggleBtn(false);
+      setTimeout(() => {
+        // 确保跳转路径正确
+        window.location.href = "../home/home.html";
+      }, 1000);
+    } else {
+      msgDiv.style.color = "#E74C3C";
+      msgDiv.innerText = res.message || "登录失败";
+      btn.disabled = false;
+      btn.innerText = "登 录";
     }
+  } catch (error) {
+    console.error("登录异常:", error);
+    msgDiv.style.color = "#E74C3C";
+    msgDiv.innerText = "网络错误或服务器异常";
+    btn.disabled = false;
+    btn.innerText = "登 录";
   }
-
-  window.handleLogin = handleLogin;
 }
 
-initLoginModule();
+// 必须挂载到 window，否则 login.html 的 onsubmit 找不到函数
+window.handleLogin = handleLogin;

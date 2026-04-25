@@ -24,18 +24,16 @@ public class BackpackServiceImpl extends ServiceImpl<BackpackMapper, UserPokemon
         this.userService = userService;
     }
 
-    @Override
-    public Page<Pokemon> getUserPokemonPage(Integer current, Integer size, String type) {
-        // 1. 获取当前登录用户
-        User currentUser = userService.getCurrentUser();
-        Integer userId = currentUser.getId();
+@Override
+public Page<Pokemon> getUserPokemonPage(Integer current, Integer size, String type) {
+    User currentUser = userService.getCurrentUser();
+    Integer userId = currentUser.getId();
 
-        // 2. 构造分页对象
-        Page<Pokemon> page = new Page<>(current, size);
+    Page<Pokemon> page = new Page<>(current, size);
+    String cleanType = org.springframework.util.StringUtils.hasText(type) ? type : null;
 
-        // 3. 调用 baseMapper 执行关联查询
-        return baseMapper.selectUserPokemonPage(page, userId, type);
-    }
+    return baseMapper.selectUserPokemonPage(page, userId, cleanType);
+}
 
     @Override
     @Transactional(rollbackFor = Exception.class)

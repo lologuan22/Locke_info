@@ -5,150 +5,136 @@
   <meta charset="UTF-8">
   <title>宠物详情 - 洛克王国图鉴</title>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-  <style>
-    body {
-      font-family: "Microsoft YaHei", sans-serif;
-      background: #f0f2f5;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-wrap: wrap;
-    }
-
-    .info-card {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .chart-card {
-      flex: 1;
-      min-width: 350px;
-      height: 400px;
-    }
-
-    .skill-section {
-      width: 100%;
-      margin-top: 30px;
-    }
-
-    .pet-img {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      object-fit: contain;
-      background: #fafafa;
-      border: 1px solid #eee;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f8f9fa;
-    }
-
-    .suggestion {
-      background: #e6f7ff;
-      padding: 15px;
-      border-left: 4px solid #1890ff;
-      margin-top: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
   <div id="app" class="container">
-    <div class="info-card" v-if="pet">
-      <h1>#{{pet.number}} {{pet.name}}</h1>
-      <img :src="'http://localhost:8080' + pet.imageUrl" class="pet-img" alt="宠物图片">
-      <p><strong>系别：</strong> {{pet.type1}}</p>
-      <p><strong>身高：</strong> {{pet.height}} m | <strong>体重：</strong> {{pet.weight}} kg</p>
-      <p><strong>简介：</strong> {{pet.description}}</p>
-
-      <div class="suggestion">
-        <strong>养成建议：</strong> {{pet.suggestion}}
-      </div>
+    <div v-if="loading" class="loading">
+      加载中...
     </div>
 
-    <div id="radarChart" class="chart-card"></div>
+    <template v-else-if="pet">
+      <div class="info-card">
+        <h1>#{{pet.number}} {{pet.name}}</h1>
 
-    <div class="skill-section" v-if="pet">
-      <h3>掌握技能</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>名称</th>
-            <th>属性</th>
-            <th>分类</th>
-            <th>威力</th>
-            <th>PP</th>
-            <th>效果</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="skill in pet.skills" :key="skill.id">
-            <td>{{skill.name}}</td>
-            <td>{{skill.type}}</td>
-            <td>{{skill.category}}</td>
-            <td>{{skill.power || '-'}}</td>
-            <td>{{skill.pp}}</td>
-            <td>{{skill.effect}}</td>
-          </tr>
-        </tbody>
-      </table>
+        <div class="pet-display-container">
+          <div class="pet-photo">
+            <img :src="'http://172.17.79.7:8080' + pet.imageUrl" class="pet-img" :alt="pet.name">
+            <p><strong>系别：</strong> {{pet.type1}}</p>
+            <p><strong>身高：</strong> {{pet.height}} m | <strong>体重：</strong> {{pet.weight}} kg</p>
+          </div>
+
+          <div class="stat-bars">
+            <div class="stat-item" v-for="(val, index) in pet.radarData" :key="index">
+              <span class="stat-label">{{ ['精力','攻击','防御','魔攻','魔抗','速度'][index] }}</span>
+              <div class="bar-container">
+                <div class="bar-fill" :style="{ width: (val/200*100) + '%' }"></div>
+              </div>
+              <span class="stat-value">{{ val }}</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="description"><strong>简介：</strong> {{pet.description}}</p>
+        <div class="suggestion">
+          <strong>养成建议：</strong> {{pet.suggestion}}
+        </div>
+      </div>
+
+      <div id="radarChart" class="chart-card"></div>
+
+      <div class="skill-section">
+        <h3>掌握技能</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>名称</th>
+              <th>属性</th>
+              <th>分类</th>
+              <th>威力</th>
+              <th>PP</th>
+              <th>效果</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="skill in pet.skills" :key="skill.id">
+              <td>{{skill.name}}</td>
+              <td>{{skill.type}}</td>
+              <td>{{skill.category}}</td>
+              <td>{{skill.power || '-'}}</td>
+              <td>{{skill.pp}}</td>
+              <td>{{skill.effect}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+
+    <div v-else class="loading">
+      未找到该宠物信息
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    // 导入封装好的 API 方法
+    import { getPokemonDetail } from '../js/api/index.js';
+
     new Vue({
       el: '#app',
       data: {
-        pet: null
+        pet: null,
+        loading: true,
+        myChart: null
       },
       mounted() {
         this.fetchData();
+        window.addEventListener('resize', () => {
+          this.myChart && this.myChart.resize();
+        });
       },
       methods: {
-        fetchData() {
-          // 硬编码 ID = 1
-          axios.get('http://localhost:8080/api/pokemons/1')
-            .then(res => {
-              if (res.data.code === 200) {
-                this.pet = res.data.data;
-                // 数据加载后渲染图表
-                this.$nextTick(() => {
-                  this.initChart(this.pet.radarData);
-                });
-              }
-            })
-            .catch(err => console.error("数据加载失败", err));
+        getQueryParam(name) {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(name);
         },
+
+        // 1. 确保数据转换正确
+        async fetchData() {
+          const id = this.getQueryParam('id');
+          try {
+            const res = await getPokemonDetail(id);
+            if (res.code === 200) {
+              this.pet = res.data;
+              // 确保 DOM 更新后再初始化
+              setTimeout(() => {
+                this.initChart(this.pet.radarData);
+              }, 100);
+            }
+          } catch (err) {
+            console.error("数据加载失败", err);
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        // 2. 增加空值校验
         initChart(radarData) {
           const chartDom = document.getElementById('radarChart');
-          const myChart = echarts.init(chartDom);
+          if (!chartDom || !radarData) return;
+
+          // 强制检查数据是否为数组且长度为6
+          const formattedData = Array.isArray(radarData) ? radarData : [];
+
+          this.myChart = echarts.init(chartDom);
+
+
           const option = {
-            title: { text: '能力分布' },
+            title: { text: '能力分布', left: 'center' },
+            tooltip: {},
             radar: {
               indicator: [
                 { name: '精力', max: 200 },
@@ -157,18 +143,20 @@
                 { name: '魔攻', max: 200 },
                 { name: '魔抗', max: 200 },
                 { name: '速度', max: 200 }
-              ]
+              ],
+              shape: 'circle'
             },
             series: [{
               type: 'radar',
               data: [{
-                value: radarData,
+                value: formattedData,
                 name: '种族值',
-                areaStyle: { color: 'rgba(24, 144, 255, 0.5)' }
+                areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
+                lineStyle: { color: '#1890ff', width: 2 }
               }]
             }]
           };
-          myChart.setOption(option);
+          this.myChart.setOption(option);
         }
       }
     });
