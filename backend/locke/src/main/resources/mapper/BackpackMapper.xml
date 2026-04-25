@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.newblash.locke.mapper.BackpackMapper">
+
+    <select id="selectUserPokemonPage" resultType="com.newblash.locke.entity.Pokemon">
+        SELECT 
+            p.* FROM pokemon p
+        INNER JOIN user_pokemon up ON p.id = up.pokemon_id
+        WHERE up.user_id = #{userId}
+        <if test="type != null and type != ''">
+            AND p.type1 = #{type}
+        </if>
+        ORDER BY p.number ASC
+    </select>
+
+</mapper>

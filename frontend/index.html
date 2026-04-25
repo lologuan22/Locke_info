@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>洛克王国Wiki</title>
+    <script>
+        // 如果本地有 token，说明登录过，直接跳去主页
+        // 如果没有 token，踢回登录页
+        if (localStorage.getItem('token')) {
+            window.location.href = '/home/home.html';
+        } else {
+            window.location.href = '/login/login.html';
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
