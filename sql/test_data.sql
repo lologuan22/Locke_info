@@ -13,8 +13,8 @@ TRUNCATE TABLE `pokemon`; -- 清空旧数据
 INSERT INTO `pokemon` (`id`, `number`, `name`, `type1`, `height`, `weight`, `description`, `image_url`) VALUES 
 (1, 133, '迪莫', '光系', 1.50, 26.80, '关于梦想的故事，已经重复到不想再去回忆。', '/api/images/dimo.gif'),
 (2, 1, '喵喵', '草系', 0.60, 12.00, '经常在宠物园出没，是新进小洛克们最喜欢的伙伴之一。', '/api/images/r_miaomiao.gif'),
-(3, 4, '火花', '火系', 0.60, 8.50, '尾巴上的火焰在高兴时会摆动得非常厉害。', '/images/huohua.gif'),
-(4, 7, '水蓝蓝', '水系', 0.50, 9.00, '非常害羞，经常躲在水草后面观察别人。', '/images/shuilanlan.gif');
+(3, 4, '火花', '火系', 0.60, 8.50, '尾巴上的火焰在高兴时会摆动得非常厉害。', '/api/images/huohua.gif'),
+(4, 7, '水蓝蓝', '水系', 0.50, 9.00, '非常害羞，经常躲在水草后面观察别人。', '/api/images/shuilanlan.gif');
 -- ==========================================
 
 
@@ -29,7 +29,7 @@ INSERT INTO `pokemon_stats` (`pokemon_id`, `hp`, `atk`, `def`, `sp_atk`, `sp_def
 (4, 44, 48, 65, 50, 64, 43);    -- 水蓝蓝
 
 -- ==========================================
--- 4. 修正：插入洛克王国真实技能
+-- 4. 插入洛克王国真实技能
 -- ==========================================
 TRUNCATE TABLE `skill`;
 INSERT INTO `skill` (`id`, `name`, `type`, `category`, `power`, `pp`, `effect`) VALUES 
