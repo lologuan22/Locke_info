@@ -1,0 +1,35 @@
+a{
+    text-decoration: none;
+    color: #111;
+}
+
+.topp{
+    height: 60px;
+    width: 100%;
+    background-color: #38aed9;
+    position: fixed;
+    display: flex;
+    align-items: center; /* 垂直居中 */
+}
+
+.logo{
+    font-weight: 800;
+    font-size: 20px;
+    margin-left: 20px;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+}
+
+.log{
+    font-size: 12px;
+    margin-left: auto; /* 自动靠右 */
+    margin-right: 20px;
+}
+
+.holdplace{
+    height: 75px;
+}
