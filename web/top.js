@@ -132,7 +132,9 @@ window.handleLogin = async function (event) {
 const getBgColor = (type) => {
     const colorMap = {
         '水': '#81A0B3', '火': '#934548', '草': '#6CB799', '翼': '#f8f8d1',
-        '电': '#fff5d1', '冰': '#e6f7ff', '武': '#ffead1', '光': '#F4E6BD',
+        '电': '#250930', '冰': '#e6f7ff', '武': '#ffead1', '光': '#F4E6BD',
+        '土': '#7a4a27', '虫': '#5a5923', '龙': '#da2828', '幽灵': '#703b7e',
+        '恶魔': '#48195c','毒': '#8f218f','石':'#502525'
     };
     return colorMap[type] || '#fff';
 };
