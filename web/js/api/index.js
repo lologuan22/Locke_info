@@ -95,7 +95,7 @@ export const logout = () => request.post("/api/user/logout");
  * 分页获取宠物列表
  * @param {Object} params
  * @param {number} [params.current=1] - 页码
- * @param {number} [params.size=10] - 每页数量
+ * @param {number} [params.size=1000] - 每页数量
  * @param {string} [params.type] - 属性类型
  * @param {string} [params.name] - 精灵名称
  * @returns {Promise<Object>} 返回 ResultPagePokemon
