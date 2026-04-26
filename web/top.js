@@ -232,20 +232,30 @@ function initUserPanel() {
 
 changeAvatarBtn.onclick = () => avatarInput.click();
 
-// 最终版：头像本地上传（永不丢失、不请求后端）
+// ========== 最终永久版：头像 Base64 永久保存，刷新/重开永远不丢 ==========
 avatarInput.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onload = function (e) {
     try {
-        const localUrl = URL.createObjectURL(file);
-        avatarImg.src = localUrl;
-        popupAvatar.src = localUrl;
-        localStorage.setItem('localAvatar', localUrl);
-        popup.classList.remove('show');
+      // 永久保存的头像
+      const base64Url = e.target.result;
+
+      // 立即显示
+      avatarImg.src = base64Url;
+      popupAvatar.src = base64Url;
+
+      // 永久存入本地
+      localStorage.setItem('localAvatar', base64Url);
+
+      popup.classList.remove('show');
     } catch (err) {
-        console.error(err);
+      console.error(err);
     }
+  };
+  reader.readAsDataURL(file);
 };
 
 // ======================
