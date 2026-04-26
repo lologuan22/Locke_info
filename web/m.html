@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛克王国wiki</title>
+    <link rel="stylesheet" href="./common.css">
+    <style>
+        .main{
+            display: flex;
+            justify-content: center;
+        }
+        .map{
+            width: 95%;
+            padding: 5px;
+            background-color: antiquewhite;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+            border-radius: 15px;
+        }
+
+        #map_in_bt{
+            display: block;
+            margin-left: auto;
+        }
+
+        .search-bar{
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-bar input, .search-bar select{
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .search-bar button{
+            padding: 8px 15px;
+            background: #38aed9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .scroll-container{
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            cursor: grab;
+        }
+        .pet-card{
+            min-width: 130px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .pet-card img{
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .pet-name{font-weight:bold;}
+        .pet-type{font-size:12px;color:#666;}
+    </style>
+</head>
+<body>
+    <div class="top">
+        <div class="topp">
+            <a href="#"><span class="logo">洛克王国wiki</span></a>
+            <a href="#" class="log">登录/注册</a>
+        </div>
+        <div class="holdplace"></div>
+    </div>
+    
+    <div class="main">
+        <div class="map">
+            <a href="#">
+                <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%">
+            </a>
+
+            <div class="search-bar">
+                <input type="text" id="nameSearch" placeholder="搜索宠物名称">
+                <select id="typeSelect">
+                    <option value="">全部属性</option>
+                    <option value="水">水</option>
+                    <option value="火">火</option>
+                    <option value="草">草</option>
+                    <option value="翼">翼</option>
+                    <option value="电">电</option>
+                    <option value="冰">冰</option>
+                    <option value="武">武</option>
+                    <option value="毒">毒</option>
+                    <option value="土">土</option>
+                    <option value="石">石</option>
+                    <option value="萌">萌</option>
+                    <option value="恶魔">恶魔</option>
+                    <option value="机械">机械</option>
+                    <option value="龙">龙</option>
+                </select>
+                <button id="searchBtn">搜索筛选</button>
+            </div>
+
+            <div class="scroll-container" id="petScrollBox">
+                <p>加载中...</p>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+// ======================
+// 完全按照你给的正确代码导入 ✅
+// ======================
+import * as api from '../js/api/index.js';
+
+let currentPage = 1;
+const BASE_URL = 'http://172.17.79.7:8080';
+
+// 绑定搜索按钮
+document.getElementById('searchBtn').addEventListener('click', loadPetList);
+
+// 加载宠物列表（和你正常页面逻辑一致）
+async function loadPetList() {
+  const nameVal = document.getElementById('nameSearch').value.trim();
+  const typeVal = document.getElementById('typeSelect').value;
+  const box = document.getElementById('petScrollBox');
+  
+  box.innerHTML = '<p>加载中...</p>';
+
+  const params = {
+    current: currentPage,
+    size: 15,
+    name: nameVal || undefined,
+    type: typeVal || undefined
+  };
+
+  try {
+    const res = await api.getPokemonList(params);
+    renderList(res.data.records || []);
+  } catch (e) {
+    box.innerHTML = '<p>请求失败，请检查控制台</p>';
+    console.error(e);
+  }
+}
+
+// 渲染卡片（图片拼接方式 100% 照搬你能显示的代码 ✅）
+function renderList(list) {
+  const box = document.getElementById('petScrollBox');
+  if (list.length === 0) {
+    box.innerHTML = '<p>暂无数据</p>';
+    return;
+  }
+
+  box.innerHTML = list.map(item => {
+    const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '';
+    return `
+      <div class="pet-card">
+        <img src="${fullImgUrl}" alt="${item.name}" 
+             style="width:100px;height:100px;object-fit:contain;"
+             onerror="this.src='https://via.placeholder.com/100?text=无图'">
+        <div class="pet-name">${item.name}</div>
+        <div class="pet-type">${item.type1}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 滚轮左右滑动
+document.getElementById('petScrollBox').addEventListener('wheel', e => {
+  e.preventDefault();
+  e.currentTarget.scrollLeft += e.deltaY;
+});
+
+// 初始化
+window.addEventListener('DOMContentLoaded', loadPetList);
+</script>
+</body>
+</html>
