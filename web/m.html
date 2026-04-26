@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-  meta charset="UTF-8">
-  meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>洛克王国wiki</title>
   <link rel="stylesheet" href="./common.css">
   <style>
@@ -11,13 +12,16 @@
       display: flex;
       justify-content: center;
     }
+
     .map {
       width: 95%;
+      height: 330px;
       padding: 5px;
       background-color: antiquewhite;
-      box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
       border-radius: 15px;
     }
+
     #map_in_bt {
       display: block;
       margin-left: auto;
@@ -31,16 +35,19 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    .search-bar input{
-        width: 20%;
+
+    .search-bar input {
+      padding: 5px;
+      border: 1px solid #999;
+      min-width: 120px;
     }
+
     .search-bar select {
-        width: 15%;
-        padding: 5px;
-        border: 1px solid #999;
-        flex: 1;
-        min-width: 120px;
+      padding: 5px;
+      border: 1px solid #999;
+      min-width: 120px;
     }
+
     .search-bar button {
       cursor: pointer;
       border: 1px solid #333;
@@ -48,13 +55,33 @@
       padding: 5px 10px;
     }
 
-    /* 核心：横向滚动容器 */
+    /* 核心：横向滚动容器（修改间距） */
     .scroll-container {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       overflow-x: auto;
-      padding: 10px 0;
+      padding: 30px 0 30px 0;
       width: 100%;
+      background-color: antiquewhite;
+    }
+
+    /* 自定义滚动条样式 */
+    .scroll-container::-webkit-scrollbar {
+      height: 9px;
+    }
+
+    .scroll-container::-webkit-scrollbar-track {
+      background: antiquewhite;
+      border-radius: 4px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #d4c7b5;
+      border-radius: 4px;
+    }
+
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #c4b7a5;
     }
 
     /* 卡片样式 */
@@ -62,41 +89,53 @@
       width: 100px;
       height: 140px;
       padding: 5px;
+      box-shadow: #616161 0px 2px 5px;
       text-align: center;
       flex-shrink: 0;
       border-radius: 6px;
       cursor: pointer;
-      position: relative; /* 定位父级 */
+      position: relative;
     }
+
     .img-placeholder {
       height: 100px;
       line-height: 80px;
       margin-bottom: 8px;
     }
+
     .card img {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
+
     .card strong {
       position: absolute;
-      bottom: 20px;    /* 距离底部距离 */
-      left: 0;        /* 左对齐 */
-      right: 0;       /* 右对齐 */
-      margin: 0 auto; /* 自动居中 */
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
       font-size: 14px;
       font-weight: bold;
     }
   </style>
 </head>
+
 <body>
-  <div class="top">
-    <div class="topp">
-      <a href="#"><span class="logo">洛克王国wiki</span></a>
-      <a href="#" class="log">登录/注册</a>
-    </div>
-    <div class="holdplace"></div>
-  </div>
+
+  <!-- 登录弹窗（已对接后端） -->
+  <div id="header-placeholder"></div>
+
+  <script>
+    // 自动加载公共头部
+    fetch('./header.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('header-placeholder').innerHTML = html
+      })
+  </script>
+  <!-- 以上是公共头部 -->
+
 
   <div class="main">
     <div class="map">
@@ -104,103 +143,29 @@
         <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%">
       </a>
 
-      <!-- 搜索 + 筛选 -->
       <div class="search-bar">
         <input type="text" id="nameSearch" placeholder="搜索精灵名称">
         <select id="typeSearch">
           <option value="">全部属性</option>
-          <option value="水系">水系</option>
-          <option value="火系">火系</option>
-          <option value="草系">草系</option>
-          <option value="草系">光系</option>
-          <option value="翼系">翼系</option>
-          <option value="电系">电系</option>
-          <option value="冰系">冰系</option>
-          <option value="武系">武系</option>
+          <option value="水">水</option>
+          <option value="火">火</option>
+          <option value="草">草</option>
+          <option value="光">光</option>
+          <option value="翼">翼</option>
+          <option value="电">电</option>
+          <option value="冰">冰</option>
+          <option value="武">武</option>
         </select>
         <button onclick="loadList()">查询</button>
       </div>
 
-      <!-- 横向滚动展示区 -->
       <div class="scroll-container" id="display-list">
         <p>加载中...</p>
       </div>
     </div>
   </div>
 
-<script type="module">
-  import * as api from './js/api/index.js';
-
-  let currentPage = 1;
-  const BASE_URL = 'http://172.17.79.7:8080';
-
-  // 根据属性返回背景颜色
-  const getBgColor = (type) => {
-    const colorMap = {
-      '水系': '#81A0B3',
-      '火系': '#934548',
-      '草系': '#6CB799',
-      '翼系': '#f8f8d1',
-      '电系': '#fff5d1',
-      '冰系': '#e6f7ff',
-      '武系': '#ffead1',
-      '光系': '#B6AE8C',
-    };
-    return colorMap[type] || '#ffffff';
-  };
-
-  // 渲染列表
-  const renderList = (list) => {
-    const container = document.getElementById('display-list');
-    if (!list || list.length === 0) {
-      container.innerHTML = '<p>暂无数据</p>';
-      return;
-    }
-
-    const html = list.map(item => {
-      const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '';
-      return `
-        <div class="card" style="background-color: ${getBgColor(item.type1)}" onclick="showDetail(${item.id})">
-          <div class="img-placeholder">
-            <img src="${fullImgUrl}" alt="${item.name}">
-          </div>
-          <div><strong>${item.name}</strong></div>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = html;
-  };
-
-  // 加载列表
-  const loadList = async () => {
-    const nameVal = document.getElementById('nameSearch').value.trim();
-    const typeVal = document.getElementById('typeSearch').value;
-
-    const params = {
-      current: 1,
-      size: 10,
-      name: nameVal || undefined,
-      type: typeVal || undefined,
-    };
-
-    try {
-      const res = await api.getPokemonList(params);
-      renderList(res.data?.records || []);
-    } catch (err) {
-      document.getElementById('display-list').innerHTML = '<p>请求失败</p>';
-      console.error('接口错误：', err);
-    }
-  };
-
-  // 跳转详情
-  window.showDetail = (id) => {
-    console.log('跳转宠物详情 ID：', id);
-  };
-
-  // 挂载函数
-  window.loadList = loadList;
-  window.addEventListener('DOMContentLoaded', loadList);
-</script>
+  <script type="module" src="./top.js"></script>
 </body>
+
 </html>

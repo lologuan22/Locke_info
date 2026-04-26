@@ -1,0 +1,57 @@
+<div class="hud">
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="login-form">
+                <h2>洛克王国 WIKI 登录</h2>
+                <div class="input-group">
+                    <label>账号</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required>
+                </div>
+
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" required>
+                </div>
+
+                <div class="input-group" id="confirmPwdGroup" style="display: none;">
+                    <label>确认密码</label>
+                    <input type="password" id="confirmPwd" placeholder="请再次输入密码">
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">登 录</button>
+                <div id="msg"></div>
+                <div class="toggle-text" id="toggleText">没有账号？注册新账号</div>
+            </form>
+        </div>
+    </div>
+
+    <div class="top">
+        <div class="topp">
+            <a href="./m.html"><span class="logo"><img src="./img/imglogo.png" alt="" class="logo"
+                        width="60%"></span></a>
+            <a class="log" onclick="openModal()">登录/注册</a>
+            <img src="" alt="用户头像" class="user-avatar" id="userAvatar" onclick="toggleAvatarPopup()">
+
+            <!-- 头像弹出面板 → 就插在这里！ -->
+            <div class="avatar-popup" id="avatarPopup">
+                <div class="user-info">
+                    <img id="popupAvatar" class="avatar-big" src="./img/default-avatar.png">
+                    <div class="username" id="popupName">用户</div>
+                </div>
+
+                <!-- 新增：修改昵称区域 -->
+                <div class="nickname-edit-wrap">
+                    <input type="text" id="newNickInput" placeholder="输入新昵称">
+                    <button class="btn-edit-nick" id="editNickBtn">保存昵称</button>
+                </div>
+
+                <input type="file" id="avatarInput" accept="image/*">
+                <button class="btn btn-change" id="changeAvatarBtn">更换头像</button>
+                <button class="btn btn-logout" id="logoutBtn">退出登录</button>
+            </div>
+        </div>
+        <div class="holdplace"></div>
+    </div>
+</div>
