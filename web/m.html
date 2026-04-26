@@ -1,185 +1,206 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>洛克王国wiki</title>
-    <link rel="stylesheet" href="./common.css">
-    <style>
-        .main{
-            display: flex;
-            justify-content: center;
-        }
-        .map{
-            width: 95%;
-            padding: 5px;
-            background-color: antiquewhite;
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-            border-radius: 15px;
-        }
+  meta charset="UTF-8">
+  meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>洛克王国wiki</title>
+  <link rel="stylesheet" href="./common.css">
+  <style>
+    /* 基础布局 */
+    .main {
+      display: flex;
+      justify-content: center;
+    }
+    .map {
+      width: 95%;
+      padding: 5px;
+      background-color: antiquewhite;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+      border-radius: 15px;
+    }
+    #map_in_bt {
+      display: block;
+      margin-left: auto;
+    }
 
-        #map_in_bt{
-            display: block;
-            margin-left: auto;
-        }
+    /* 搜索筛选栏 */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-bar input{
+        width: 20%;
+    }
+    .search-bar select {
+        width: 15%;
+        padding: 5px;
+        border: 1px solid #999;
+        flex: 1;
+        min-width: 120px;
+    }
+    .search-bar button {
+      cursor: pointer;
+      border: 1px solid #333;
+      background: #eee;
+      padding: 5px 10px;
+    }
 
-        .search-bar{
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .search-bar input, .search-bar select{
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 120px;
-        }
-        .search-bar button{
-            padding: 8px 15px;
-            background: #38aed9;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+    /* 核心：横向滚动容器 */
+    .scroll-container {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 10px 0;
+      width: 100%;
+    }
 
-        .scroll-container{
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            cursor: grab;
-        }
-        .pet-card{
-            min-width: 130px;
-            background: white;
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .pet-card img{
-            width: 100px;
-            height: 100px;
-            object-fit: contain;
-            margin-bottom: 8px;
-        }
-        .pet-name{font-weight:bold;}
-        .pet-type{font-size:12px;color:#666;}
-    </style>
+    /* 卡片样式 */
+    .card {
+      width: 100px;
+      height: 140px;
+      padding: 5px;
+      text-align: center;
+      flex-shrink: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative; /* 定位父级 */
+    }
+    .img-placeholder {
+      height: 100px;
+      line-height: 80px;
+      margin-bottom: 8px;
+    }
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .card strong {
+      position: absolute;
+      bottom: 20px;    /* 距离底部距离 */
+      left: 0;        /* 左对齐 */
+      right: 0;       /* 右对齐 */
+      margin: 0 auto; /* 自动居中 */
+      font-size: 14px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-    <div class="top">
-        <div class="topp">
-            <a href="#"><span class="logo">洛克王国wiki</span></a>
-            <a href="#" class="log">登录/注册</a>
-        </div>
-        <div class="holdplace"></div>
+  <div class="top">
+    <div class="topp">
+      <a href="#"><span class="logo">洛克王国wiki</span></a>
+      <a href="#" class="log">登录/注册</a>
     </div>
-    
-    <div class="main">
-        <div class="map">
-            <a href="#">
-                <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%">
-            </a>
+    <div class="holdplace"></div>
+  </div>
 
-            <div class="search-bar">
-                <input type="text" id="nameSearch" placeholder="搜索宠物名称">
-                <select id="typeSelect">
-                    <option value="">全部属性</option>
-                    <option value="水">水</option>
-                    <option value="火">火</option>
-                    <option value="草">草</option>
-                    <option value="翼">翼</option>
-                    <option value="电">电</option>
-                    <option value="冰">冰</option>
-                    <option value="武">武</option>
-                    <option value="毒">毒</option>
-                    <option value="土">土</option>
-                    <option value="石">石</option>
-                    <option value="萌">萌</option>
-                    <option value="恶魔">恶魔</option>
-                    <option value="机械">机械</option>
-                    <option value="龙">龙</option>
-                </select>
-                <button id="searchBtn">搜索筛选</button>
-            </div>
+  <div class="main">
+    <div class="map">
+      <a href="#">
+        <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%">
+      </a>
 
-            <div class="scroll-container" id="petScrollBox">
-                <p>加载中...</p>
-            </div>
-        </div>
+      <!-- 搜索 + 筛选 -->
+      <div class="search-bar">
+        <input type="text" id="nameSearch" placeholder="搜索精灵名称">
+        <select id="typeSearch">
+          <option value="">全部属性</option>
+          <option value="水系">水系</option>
+          <option value="火系">火系</option>
+          <option value="草系">草系</option>
+          <option value="草系">光系</option>
+          <option value="翼系">翼系</option>
+          <option value="电系">电系</option>
+          <option value="冰系">冰系</option>
+          <option value="武系">武系</option>
+        </select>
+        <button onclick="loadList()">查询</button>
+      </div>
+
+      <!-- 横向滚动展示区 -->
+      <div class="scroll-container" id="display-list">
+        <p>加载中...</p>
+      </div>
     </div>
+  </div>
 
 <script type="module">
-// ======================
-// 完全按照你给的正确代码导入 ✅
-// ======================
-import * as api from '../js/api/index.js';
+  import * as api from './js/api/index.js';
 
-let currentPage = 1;
-const BASE_URL = 'http://172.17.79.7:8080';
+  let currentPage = 1;
+  const BASE_URL = 'http://172.17.79.7:8080';
 
-// 绑定搜索按钮
-document.getElementById('searchBtn').addEventListener('click', loadPetList);
-
-// 加载宠物列表（和你正常页面逻辑一致）
-async function loadPetList() {
-  const nameVal = document.getElementById('nameSearch').value.trim();
-  const typeVal = document.getElementById('typeSelect').value;
-  const box = document.getElementById('petScrollBox');
-  
-  box.innerHTML = '<p>加载中...</p>';
-
-  const params = {
-    current: currentPage,
-    size: 15,
-    name: nameVal || undefined,
-    type: typeVal || undefined
+  // 根据属性返回背景颜色
+  const getBgColor = (type) => {
+    const colorMap = {
+      '水系': '#81A0B3',
+      '火系': '#934548',
+      '草系': '#6CB799',
+      '翼系': '#f8f8d1',
+      '电系': '#fff5d1',
+      '冰系': '#e6f7ff',
+      '武系': '#ffead1',
+      '光系': '#B6AE8C',
+    };
+    return colorMap[type] || '#ffffff';
   };
 
-  try {
-    const res = await api.getPokemonList(params);
-    renderList(res.data.records || []);
-  } catch (e) {
-    box.innerHTML = '<p>请求失败，请检查控制台</p>';
-    console.error(e);
-  }
-}
+  // 渲染列表
+  const renderList = (list) => {
+    const container = document.getElementById('display-list');
+    if (!list || list.length === 0) {
+      container.innerHTML = '<p>暂无数据</p>';
+      return;
+    }
 
-// 渲染卡片（图片拼接方式 100% 照搬你能显示的代码 ✅）
-function renderList(list) {
-  const box = document.getElementById('petScrollBox');
-  if (list.length === 0) {
-    box.innerHTML = '<p>暂无数据</p>';
-    return;
-  }
+    const html = list.map(item => {
+      const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '';
+      return `
+        <div class="card" style="background-color: ${getBgColor(item.type1)}" onclick="showDetail(${item.id})">
+          <div class="img-placeholder">
+            <img src="${fullImgUrl}" alt="${item.name}">
+          </div>
+          <div><strong>${item.name}</strong></div>
+        </div>
+      `;
+    }).join('');
 
-  box.innerHTML = list.map(item => {
-    const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '';
-    return `
-      <div class="pet-card">
-        <img src="${fullImgUrl}" alt="${item.name}" 
-             style="width:100px;height:100px;object-fit:contain;"
-             onerror="this.src='https://via.placeholder.com/100?text=无图'">
-        <div class="pet-name">${item.name}</div>
-        <div class="pet-type">${item.type1}</div>
-      </div>
-    `;
-  }).join('');
-}
+    container.innerHTML = html;
+  };
 
-// 滚轮左右滑动
-document.getElementById('petScrollBox').addEventListener('wheel', e => {
-  e.preventDefault();
-  e.currentTarget.scrollLeft += e.deltaY;
-});
+  // 加载列表
+  const loadList = async () => {
+    const nameVal = document.getElementById('nameSearch').value.trim();
+    const typeVal = document.getElementById('typeSearch').value;
 
-// 初始化
-window.addEventListener('DOMContentLoaded', loadPetList);
+    const params = {
+      current: 1,
+      size: 10,
+      name: nameVal || undefined,
+      type: typeVal || undefined,
+    };
+
+    try {
+      const res = await api.getPokemonList(params);
+      renderList(res.data?.records || []);
+    } catch (err) {
+      document.getElementById('display-list').innerHTML = '<p>请求失败</p>';
+      console.error('接口错误：', err);
+    }
+  };
+
+  // 跳转详情
+  window.showDetail = (id) => {
+    console.log('跳转宠物详情 ID：', id);
+  };
+
+  // 挂载函数
+  window.loadList = loadList;
+  window.addEventListener('DOMContentLoaded', loadList);
 </script>
 </body>
 </html>
