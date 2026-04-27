@@ -105,7 +105,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Value("${file.upload-path}")
-    private String basePath;
+    private String commonPath; // 用于通用图片
+
+    @Value("${file.avatar-path}")
+    private String avatarPath; // 用于头像图片
 
     /**
      * 头像上传专用接口
@@ -118,12 +121,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 通用的私有文件保存逻辑
+     * * @param file 文件流
      * 
-     * @param file      文件流
-     * @param subDir    物理子目录名称 (例如: avatars, products)
-     * @param uriPrefix 数据库存储的访问前缀 (对应 WebConfig 里的映射)
+     * @param physicalPath 物理存储的绝对路径 (直接由外部注入，如 avatarPath)
+     * @param uriPrefix    数据库存储的访问前缀 (如 /api/avatars/)
      */
-    private String saveFile(MultipartFile file, String subDir, String uriPrefix) {
+    private String saveFile(MultipartFile file, String physicalPath, String uriPrefix) {
         if (file.isEmpty()) {
             throw new RuntimeException("上传文件不能为空");
         }
@@ -136,14 +139,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String newFileName = UUID.randomUUID().toString() + suffix;
 
         try {
-            // 2. 确定物理存储全路径：D:/locke-uploads/avatars/
-            String fullDirPath = basePath.endsWith("/") ? basePath + subDir : basePath + "/" + subDir;
-            File destDir = new File(fullDirPath);
+            // 2. 确定物理存储全路径
+            // 直接使用传入的物理路径，确保它和 WebConfig 里的配置是一致的
+            File destDir = new File(physicalPath);
             if (!destDir.exists()) {
                 destDir.mkdirs();
             }
 
-            // 3. 物理保存
+            // 3. 物理保存 (使用 destDir 目录和文件名构建完整文件对象)
             file.transferTo(new File(destDir, newFileName));
 
             // 4. 返回前端访问路径：/api/avatars/xxxx.jpg
