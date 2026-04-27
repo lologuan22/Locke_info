@@ -1,173 +1,161 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>洛克王国wiki</title>
-    <link rel="stylesheet" href="./common.css" />
-    <style>
-      /* 基础布局 */
-      .main {
-        display: flex;
-        justify-content: center;
-      }
 
-      .map {
-        width: 95%;
-        height: 330px;
-        padding: 5px;
-        background-color: antiquewhite;
-        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-        border-radius: 15px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>洛克王国wiki</title>
+  <link rel="stylesheet" href="./common.css" />
+  <style>
+    /* 基础布局 */
+    .main {
+      display: flex;
+      justify-content: center;
+    }
 
-      #map_in_bt {
-        display: block;
-        margin-left: auto;
-      }
+    .map {
+      width: 95%;
+      height: 330px;
+      padding: 5px;
+      background-color: antiquewhite;
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+      border-radius: 15px;
+    }
 
-      /* 搜索筛选栏 */
-      .search-bar {
-        display: flex;
-        gap: 10px;
-        margin: 15px 0;
-        flex-wrap: wrap;
-        align-items: center;
-      }
+    #map_in_bt {
+      display: block;
+      margin-left: auto;
+    }
 
-      .search-bar input {
-        padding: 5px;
-        border: 1px solid #999;
-        min-width: 120px;
-      }
+    /* 搜索筛选栏 */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
-      .search-bar select {
-        padding: 5px;
-        border: 1px solid #999;
-        min-width: 120px;
-      }
+    .search-bar input {
+      padding: 5px;
+      border: 1px solid #999;
+      min-width: 120px;
+    }
 
-      .search-bar button {
-        cursor: pointer;
-        border: 1px solid #333;
-        background: #eee;
-        padding: 5px 10px;
-      }
+    .search-bar select {
+      padding: 5px;
+      border: 1px solid #999;
+      min-width: 120px;
+    }
 
-      /* 核心：横向滚动容器（修改间距） */
-      .scroll-container {
-        display: flex;
-        gap: 12px;
-        overflow-x: auto;
-        padding: 30px 0 30px 0;
-        width: 100%;
-        background-color: antiquewhite;
-      }
+    .search-bar button {
+      cursor: pointer;
+      border: 1px solid #333;
+      background: #eee;
+      padding: 5px 10px;
+    }
 
-      /* 自定义滚动条样式 */
-      .scroll-container::-webkit-scrollbar {
-        height: 9px;
-      }
+    /* 核心：横向滚动容器（修改间距） */
+    .scroll-container {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 30px 0 30px 0;
+      padding-left: 15px;
+      width: 98%;
+      background-color: antiquewhite;
+    }
 
-      .scroll-container::-webkit-scrollbar-track {
-        background: antiquewhite;
-        border-radius: 4px;
-      }
+    /* 自定义滚动条样式 */
+    .scroll-container::-webkit-scrollbar {
+      height: 9px;
+    }
 
-      .scroll-container::-webkit-scrollbar-thumb {
-        background: #d4c7b5;
-        border-radius: 4px;
-      }
+    .scroll-container::-webkit-scrollbar-track {
+      background: antiquewhite;
+      border-radius: 4px;
+    }
 
-      .scroll-container::-webkit-scrollbar-thumb:hover {
-        background: #c4b7a5;
-      }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: #d4c7b5;
+      border-radius: 4px;
+    }
 
-      /* 卡片样式 */
-      .card {
-        width: 100px;
-        height: 140px;
-        padding: 5px;
-        box-shadow: #616161 0px 2px 5px;
-        text-align: center;
-        flex-shrink: 0;
-        border-radius: 6px;
-        cursor: pointer;
-        position: relative;
-      }
+    .scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #c4b7a5;
+    }
 
-      .img-placeholder {
-        height: 100px;
-        line-height: 80px;
-        margin-bottom: 8px;
-      }
+    /* 背包列表样式 */
+    .backpack-map {
+      min-height: 180px;
+    }
 
-      .card img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
+    .backpack-scroll {
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
 
-      .card strong {
-        position: absolute;
-        bottom: 20px;
-        left: 0;
-        right: 0;
-        margin: 0 auto;
-        font-size: 14px;
-        font-weight: bold;
-      }
-    </style>
-  </head>
+    
+  </style>
+</head>
 
-  <body>
-    <!-- 登录弹窗（已对接后端） -->
-    <div id="header-placeholder"></div>
+<body>
+  <!-- 登录弹窗（已对接后端） -->
+  <div id="header-placeholder"></div>
 
-    <script>
-      // 自动加载公共头部
-      fetch("./header.html")
-        .then((res) => res.text())
-        .then((html) => {
-          document.getElementById("header-placeholder").innerHTML = html;
-        });
-    </script>
-    <!-- 以上是公共头部 -->
+  <script>
+    // 自动加载公共头部
+    fetch("./header.html")
+      .then((res) => res.text())
+      .then((html) => {
+        document.getElementById("header-placeholder").innerHTML = html;
+      });
+  </script>
+  <!-- 以上是公共头部 -->
 
-    <div class="main">
-      <div class="map">
-        <a href="#">
-          <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%" />
-        </a>
+  <div class="main">
+    <div class="map">
+      <a href="#">
+        <img id="map_in_bt" src="./img/imgmap.png" alt="" width="20%" />
+      </a>
 
-        <div class="search-bar">
-          <input type="text" id="nameSearch" placeholder="搜索精灵名称" />
-          <select id="typeSearch">
-            <option value="">全部属性</option>
-            <option value="水">水</option>
-            <option value="火">火</option>
-            <option value="草">草</option>
-            <option value="光">光</option>
-            <option value="翼">翼</option>
-            <option value="电">电</option>
-            <option value="冰">冰</option>
-            <option value="武">武</option>
-            <option value="土">土</option>
-            <option value="虫">虫</option>
-            <option value="幽灵">幽灵</option>
-            <option value="恶魔">恶魔</option>
-            <option value="龙">龙</option>
-            <option valie="毒">毒</option>
-          </select>
-          <button onclick="loadList()">查询</button>
-        </div>
+      <div class="search-bar">
+        <input type="text" id="nameSearch" placeholder="搜索精灵名称" />
+        <select id="typeSearch">
+          <option value="">全部属性</option>
+          <option value="水">水</option>
+          <option value="火">火</option>
+          <option value="草">草</option>
+          <option value="光">光</option>
+          <option value="翼">翼</option>
+          <option value="电">电</option>
+          <option value="冰">冰</option>
+          <option value="武">武</option>
+          <option value="土">土</option>
+          <option value="虫">虫</option>
+          <option value="幽灵">幽灵</option>
+          <option value="恶魔">恶魔</option>
+          <option value="龙">龙</option>
+          <option valie="毒">毒</option>
+        </select>
+        <button onclick="loadList()">查询</button>
+      </div>
 
-        <div class="scroll-container" id="display-list">
-          <p>未查询到精灵</p>
-        </div>
+      <div class="scroll-container" id="display-list">
+        <p>未查询到精灵</p>
       </div>
     </div>
+  </div>
+  <div class="map backpack-map" style="margin-top:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h3 style="margin:0; font-size:16px;">我的背包</h3>
+    </div>
 
-    <script type="module" src="./top.js"></script>
-  </body>
+    <div class="scroll-container backpack-scroll" id="backpack-list">
+      <p>请先登录查看背包</p>
+    </div>
+  </div>
+  <script type="module" src="./top.js"></script>
+</body>
+
 </html>

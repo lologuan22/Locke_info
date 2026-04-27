@@ -139,35 +139,114 @@ const getBgColor = (type) => {
     return colorMap[type] || '#fff';
 };
 
-const renderList = (list) => {
-    const container = document.getElementById('display-list');
-    if (!container) return;
-    if (!list || list.length === 0) { container.innerHTML = '<p>暂无数据</p>'; return; }
-    container.innerHTML = list.map(item => `
-      <div class="card" style="background:${getBgColor(item.type1)}" onclick="showDetail(${item.id})">
-        <div class="img-placeholder"><img src="${BASE_URL}${item.imageUrl || ''}" alt="${item.name}"></div>
+const renderList = (list, ownedIds = []) => {
+  const container = document.getElementById('display-list');
+  if (!container) return;
+  if (!list || list.length === 0) {
+    container.innerHTML = '<p>暂无数据</p>';
+    return;
+  }
+
+  container.innerHTML = list.map(item => {
+    const isOwned = ownedIds.includes(item.id);
+    return `
+      <div class="card" style="background:${getBgColor(item.type1)}">
+        <div class="img-placeholder" onclick="showDetail(${item.id})">
+          <img src="${BASE_URL}${item.imageUrl || ''}" alt="${item.name}">
+        </div>
         <strong>${item.name}</strong>
+        ${!isOwned ? `<div class="add-btn" onclick="addToMyBag(${item.id},event)">+</div>` : ''}
       </div>
-    `).join('');
+    `;
+  }).join('');
+};
+
+// 渲染背包
+export const renderBackpack = (list) => {
+  const container = document.getElementById('backpack-list');
+  if (!container) return;
+  if (!list || list.length === 0) {
+    container.innerHTML = '<p>背包里还没有精灵</p>';
+    return;
+  }
+
+  container.innerHTML = list.map(item => `
+    <div class="card" style="background:${getBgColor(item.pokemon.type1)}">
+      <div class="img-placeholder" onclick="showDetail(${item.pokemon.id})">
+        <img src="${BASE_URL}${item.pokemon.imageUrl || ''}" alt="${item.pokemon.name}">
+      </div>
+      <strong>${item.pokemon.name}</strong>
+      <div class="del-btn" onclick="removeFromMyBag(${item.pokemon.id},event)">−</div>
+    </div>
+  `).join('');
+};
+
+// 添加到背包
+window.addToMyBag = async (pokemonId, e) => {
+  e.stopPropagation();
+  try {
+    await api.addToBackpack(pokemonId);
+    alert('添加成功！');
+    loadList();
+    loadBackpack();
+  } catch (err) {
+    alert('请先登录！');
+  }
+};
+
+// 从背包移除
+window.removeFromMyBag = async (pokemonId, e) => {
+  e.stopPropagation();
+  try {
+    await api.removeFromBackpack(pokemonId);
+    alert('已移出背包');
+    loadList();
+    loadBackpack();
+  } catch (err) {
+    alert('操作失败');
+  }
+};
+
+// 加载背包
+export const loadBackpack = async () => {
+  try {
+    const res = await api.getUserBackpack({ current: 1, size: 100 });
+    renderBackpack(res.data?.records || []);
+  } catch (err) {
+    const ctn = document.getElementById('backpack-list');
+    if (ctn) ctn.innerHTML = '<p>请先登录</p>';
+  }
 };
 
 export const loadList = async () => {
-    const container = document.getElementById('display-list');
-    if (!container) return;
+  const container = document.getElementById('display-list');
+  if (!container) return;
 
-    const params = {
-        current: 1, size: 1000,
-        name: document.getElementById('nameSearch')?.value.trim() || undefined,
-        type: document.getElementById('typeSearch')?.value || undefined,
-        sort: 'id', order: 'asc'
-    };
+  const params = {
+    current: 1, size: 1000,
+    name: document.getElementById('nameSearch')?.value.trim() || undefined,
+    type: document.getElementById('typeSearch')?.value || undefined,
+    sort: 'id', order: 'asc'
+  };
+
+  try {
+    // 1. 获取精灵列表
+    const res = await api.getPokemonList(params);
+    const list = res.data?.records || [];
+
+    // 2. 获取已拥有的ID
+    let ownedIds = [];
     try {
-        const res = await api.getPokemonList(params);
-        renderList(res.data?.records || []);
-    } catch (err) {
-        const ctn = document.getElementById('display-list');
-        if (ctn) ctn.innerHTML = '<p>请求失败</p>';
-    }
+      const backpackRes = await api.getUserBackpack({ current: 1, size: 100 });
+      ownedIds = (backpackRes.data?.records || []).map(item => item.pokemon.id);
+    } catch {}
+
+    // 3. 渲染时传 ownedIds，自动隐藏加号
+    renderList(list, ownedIds);
+  } catch (err) {
+    const ctn = document.getElementById('display-list');
+    if (ctn) ctn.innerHTML = '<p>请求失败</p>';
+  }
 };
 
 window.showDetail = (id) => location.href = `details.html?id=${id}`;
@@ -280,6 +359,7 @@ window.addEventListener('DOMContentLoaded', () => {
     keepLoginStatus();
     initUserPanel();
     loadList();
+    loadBackpack(); // 加这一行
 });
 
 // ======================
