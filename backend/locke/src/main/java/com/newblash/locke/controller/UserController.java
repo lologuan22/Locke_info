@@ -5,6 +5,8 @@ import com.newblash.locke.entity.LoginDTO;
 import com.newblash.locke.entity.RegisterDTO;
 import com.newblash.locke.entity.User;
 import com.newblash.locke.service.UserService;
+import com.newblash.locke.vo.LoginVO;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +23,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
-
 @Tag(name = "用户认证", description = "处理用户登录、注销及权限验证相关接口")
 @RestController
 @RequestMapping("/api/user")
@@ -31,15 +31,14 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "用户登录", description = "根据用户名和密码获取 Token 及用户信息", responses = {
-            @ApiResponse(responseCode = "200", description = "登录成功", content = @Content(schema = @Schema(implementation = LoginResult.class))),
-            @ApiResponse(responseCode = "400", description = "用户名或密码错误", content = @Content)
+    @Operation(summary = "用户登录", responses = {
+            @ApiResponse(responseCode = "200", description = "登录成功", content = @Content(schema = @Schema(implementation = LoginVO.class)))
     })
     @PostMapping("/login")
-    public Result<Map<String, Object>> login(@RequestBody LoginDTO loginDTO) {
+    public Result<LoginVO> login(@RequestBody LoginDTO loginDTO) {
         try {
-            Map<String, Object> data = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
-            return Result.success(data);
+            LoginVO loginVO = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
+            return Result.success(loginVO);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
@@ -89,12 +88,5 @@ public class UserController {
         } catch (Exception e) {
             return Result.error("头像上传失败：" + e.getMessage());
         }
-    }
-
-    // 辅助类：仅用于在 Swagger 文档中展示 Map 的结构
-    // 如果你将来把 Map 改为具体的类（推荐），这个类就可以删掉
-    private static class LoginResult extends Result<Map<String, Object>> {
-        @Schema(description = "包含 token 和 userInfo 的键值对", example = "{ \"token\": \"ey...\", \"userInfo\": {...} }")
-        private Map<String, Object> data;
     }
 }

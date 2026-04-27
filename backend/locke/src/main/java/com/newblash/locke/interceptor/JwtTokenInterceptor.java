@@ -6,6 +6,8 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -16,13 +18,17 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
     private final JwtUtil jwtUtil;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler) throws Exception {
+
         String token = request.getHeader("Authorization");
+
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return true;
         }
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
@@ -32,15 +38,17 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
             Integer userId = Integer.parseInt(claims.getSubject());
             BaseContext.setCurrentId(userId);
             return true;
-        } catch (Exception e) {
-            response.setStatus(401);
+        } catch (Exception _) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-            throws Exception {
+    public void afterCompletion(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler,
+            @Nullable Exception ex) throws Exception {
         BaseContext.removeCurrentId();
     }
 }

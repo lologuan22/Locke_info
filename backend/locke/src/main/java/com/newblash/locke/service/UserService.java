@@ -1,10 +1,9 @@
 package com.newblash.locke.service;
 
-import java.util.Map;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import com.newblash.locke.entity.User;
+import com.newblash.locke.vo.LoginVO;
 import com.newblash.locke.entity.RegisterDTO;
 
 public interface UserService {
@@ -14,7 +13,7 @@ public interface UserService {
      * 
      * @return 包含 token 和 userInfo 的 Map
      */
-    Map<String, Object> login(String username, String password);
+    LoginVO login(String username, String password);
 
     /**
      * 用户注册
