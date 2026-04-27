@@ -13,7 +13,7 @@ let currentPage = 1;
 const BASE_URL = 'http://172.17.79.7:8080';
 
 // ======================
-// 保持登录状态（修复头像刷新丢失）
+// 保持登录状态
 // ======================
 function keepLoginStatus() {
     try {
@@ -110,6 +110,8 @@ window.handleLogin = async function (event) {
 
             keepLoginStatus();
             initUserPanel();
+            await loadList();
+            await loadBackpack();
 
             setTimeout(closeModal, 1000);
         } else {
@@ -127,29 +129,30 @@ window.handleLogin = async function (event) {
 };
 
 // ======================
-// 宠物卡片列表
+// 宠物卡片样式
 // ======================
 const getBgColor = (type) => {
     const colorMap = {
         '水': '#81A0B3', '火': '#934548', '草': '#6CB799', '翼': '#f8f8d1',
         '电': '#250930', '冰': '#e6f7ff', '武': '#ffead1', '光': '#F4E6BD',
         '土': '#7a4a27', '虫': '#5a5923', '龙': '#da2828', '幽灵': '#703b7e',
-        '恶魔': '#48195c','毒': '#8f218f','石':'#502525'
+        '恶魔': '#48195c', '毒': '#8f218f', '石': '#502525'
     };
     return colorMap[type] || '#fff';
 };
 
+// 渲染精灵列表
 const renderList = (list, ownedIds = []) => {
-  const container = document.getElementById('display-list');
-  if (!container) return;
-  if (!list || list.length === 0) {
-    container.innerHTML = '<p>暂无数据</p>';
-    return;
-  }
+    const container = document.getElementById('display-list');
+    if (!container) return;
+    if (!list || list.length === 0) {
+        container.innerHTML = '<p>暂无数据</p>';
+        return;
+    }
 
-  container.innerHTML = list.map(item => {
-    const isOwned = ownedIds.includes(item.id);
-    return `
+    container.innerHTML = list.map(item => {
+        const isOwned = ownedIds.includes(Number(item.id));
+        return `
       <div class="card" style="background:${getBgColor(item.type1)}">
         <div class="img-placeholder" onclick="showDetail(${item.id})">
           <img src="${BASE_URL}${item.imageUrl || ''}" alt="${item.name}">
@@ -158,7 +161,7 @@ const renderList = (list, ownedIds = []) => {
         ${!isOwned ? `<div class="add-btn" onclick="addToMyBag(${item.id},event)">+</div>` : ''}
       </div>
     `;
-  }).join('');
+    }).join('');
 };
 
 // 渲染背包
@@ -166,58 +169,73 @@ export const renderBackpack = (list) => {
   const container = document.getElementById('backpack-list');
   if (!container) return;
   if (!list || list.length === 0) {
-    container.innerHTML = '<p>背包里还没有精灵</p>';
+    container.innerHTML = '<p>收藏夹里还没有这类精灵</p>';
     return;
   }
 
   container.innerHTML = list.map(item => `
-    <div class="card" style="background:${getBgColor(item.pokemon.type1)}">
-      <div class="img-placeholder" onclick="showDetail(${item.pokemon.id})">
-        <img src="${BASE_URL}${item.pokemon.imageUrl || ''}" alt="${item.pokemon.name}">
+    <div class="card" style="background:${getBgColor(item.type1)}">
+      <div class="img-placeholder" onclick="showDetail(${item.id})">
+        <img src="${BASE_URL}${item.imageUrl || ''}" alt="${item.name}">
       </div>
-      <strong>${item.pokemon.name}</strong>
-      <div class="del-btn" onclick="removeFromMyBag(${item.pokemon.id},event)">−</div>
+      <strong>${item.name}</strong>
+      <div class="del-btn" onclick="removeFromMyBag(${item.id},event)">−</div>
     </div>
   `).join('');
 };
 
-// 添加到背包
+// 添加到收藏
 window.addToMyBag = async (pokemonId, e) => {
   e.stopPropagation();
   try {
     await api.addToBackpack(pokemonId);
-    alert('添加成功！');
-    loadList();
-    loadBackpack();
+    await Promise.all([loadList(), loadBackpack()]);
   } catch (err) {
-    alert('请先登录！');
-  }
-};
-
-// 从背包移除
-window.removeFromMyBag = async (pokemonId, e) => {
-  e.stopPropagation();
-  try {
-    await api.removeFromBackpack(pokemonId);
-    alert('已移出背包');
-    loadList();
-    loadBackpack();
-  } catch (err) {
+    console.error(err);
     alert('操作失败');
   }
 };
 
-// 加载背包
-export const loadBackpack = async () => {
+// 移除出背包
+window.removeFromMyBag = async (pokemonId, e) => {
+  e.stopPropagation();
   try {
-    const res = await api.getUserBackpack({ current: 1, size: 100 });
-    renderBackpack(res.data?.records || []);
+    await api.removeFromBackpack(pokemonId);
+    await Promise.all([loadList(), loadBackpack()]);
   } catch (err) {
-    const ctn = document.getElementById('backpack-list');
-    if (ctn) ctn.innerHTML = '<p>请先登录</p>';
+    console.error(err);
+    alert('操作失败');
   }
 };
 
+// 加载背包（支持筛选）
+export const loadBackpack = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      document.getElementById('backpack-list').innerHTML = '<p>请先登录查看收藏</p>';
+      return;
+    }
+
+    const name = document.getElementById('backpackNameSearch').value.trim();
+    const type = document.getElementById('backpackTypeSearch').value;
+    
+    const res = await api.getUserBackpack({ current: 1, size: 100 });
+    let list = res.data?.records || [];
+
+    if (name) list = list.filter(item => item.name.includes(name));
+    if (type) list = list.filter(item => item.type1 === type);
+
+    renderBackpack(list);
+  } catch (err) {
+    document.getElementById('backpack-list').innerHTML = '<p>请先登录</p>';
+    console.error('加载收藏失败', err);
+  }
+};
+// 🔥 修复：挂载到全局，让HTML的onclick能调用
+window.loadBackpack = loadBackpack;
+
+// 加载精灵列表
 export const loadList = async () => {
   const container = document.getElementById('display-list');
   if (!container) return;
@@ -230,25 +248,27 @@ export const loadList = async () => {
   };
 
   try {
-    // 1. 获取精灵列表
     const res = await api.getPokemonList(params);
     const list = res.data?.records || [];
 
-    // 2. 获取已拥有的ID
     let ownedIds = [];
     try {
-      const backpackRes = await api.getUserBackpack({ current: 1, size: 100 });
-      ownedIds = (backpackRes.data?.records || []).map(item => item.pokemon.id);
-    } catch {}
+      if (localStorage.getItem('token')) {
+        const backpackRes = await api.getUserBackpack({ current: 1, size: 100 });
+        ownedIds = (backpackRes.data?.records || []).map(item => Number(item.id));
+      }
+    } catch (e) {
+      console.log('获取背包失败', e);
+    }
 
-    // 3. 渲染时传 ownedIds，自动隐藏加号
     renderList(list, ownedIds);
   } catch (err) {
-    const ctn = document.getElementById('display-list');
-    if (ctn) ctn.innerHTML = '<p>请求失败</p>';
+    console.error('加载列表失败', err);
+    container.innerHTML = '<p>请求失败</p>';
   }
 };
 
+// 跳转详情
 window.showDetail = (id) => location.href = `details.html?id=${id}`;
 window.loadList = loadList;
 
@@ -277,7 +297,7 @@ window.toggleMode = function () {
 document.getElementById("toggleText").onclick = toggleMode;
 
 // ======================
-// 头像面板功能
+// 头像面板
 // ======================
 let popup = document.getElementById('avatarPopup');
 let avatarImg = document.getElementById('userAvatar');
@@ -297,7 +317,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 修复：头像刷新不丢失
+// 初始化用户面板
 function initUserPanel() {
     try {
         let user = JSON.parse(localStorage.getItem('userInfo'));
@@ -311,35 +331,27 @@ function initUserPanel() {
 
 changeAvatarBtn.onclick = () => avatarInput.click();
 
-// ========== 最终永久版：头像 Base64 永久保存，刷新/重开永远不丢 ==========
+// 头像上传
 avatarInput.onchange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    try {
-      // 永久保存的头像
-      const base64Url = e.target.result;
-
-      // 立即显示
-      avatarImg.src = base64Url;
-      popupAvatar.src = base64Url;
-
-      // 永久存入本地
-      localStorage.setItem('localAvatar', base64Url);
-
-      popup.classList.remove('show');
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        try {
+            const base64Url = e.target.result;
+            avatarImg.src = base64Url;
+            popupAvatar.src = base64Url;
+            localStorage.setItem('localAvatar', base64Url);
+            popup.classList.remove('show');
+        } catch (err) {
+            console.error(err);
+        }
+    };
+    reader.readAsDataURL(file);
 };
 
-// ======================
-// 退出登录（清理本地头像）
-// ======================
+// 退出登录
 logoutBtn.onclick = async () => {
     try {
         const { logout } = await import('./js/api/index.js');
@@ -352,19 +364,15 @@ logoutBtn.onclick = async () => {
     location.reload();
 };
 
-// ======================
 // 页面加载
-// ======================
 window.addEventListener('DOMContentLoaded', () => {
     keepLoginStatus();
     initUserPanel();
     loadList();
-    loadBackpack(); // 加这一行
+    loadBackpack();
 });
 
-// ======================
-// 修改昵称（本地稳定版）
-// ======================
+// 修改昵称
 const editNickBtn = document.getElementById('editNickBtn');
 const newNickInput = document.getElementById('newNickInput');
 
@@ -389,4 +397,43 @@ editNickBtn.onclick = async () => {
     } catch (err) {
         console.error(err);
     }
+};
+
+// 🔥 一键清空收藏/背包
+window.clearBackpack = async () => {
+  // 防误触：确认弹窗
+  if (!confirm('⚠️ 确定要清空【所有收藏】吗？\n此操作不可恢复！')) {
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('请先登录！');
+      return;
+    }
+
+    // 1. 获取当前所有收藏数据
+    const res = await api.getUserBackpack({ current: 1, size: 100 });
+    const pokemonList = res.data?.records || [];
+
+    // 空数据判断
+    if (pokemonList.length === 0) {
+      alert('收藏夹已经是空的啦！');
+      return;
+    }
+
+    // 2. 循环删除所有精灵
+    for (let item of pokemonList) {
+      await api.removeFromBackpack(item.id);
+    }
+
+    // 3. 刷新列表 + 收藏
+    await Promise.all([loadList(), loadBackpack()]);
+    alert('✅ 清空收藏成功！');
+
+  } catch (err) {
+    console.error('清空收藏失败', err);
+    alert('❌ 清空失败，请稍后重试！');
+  }
 };

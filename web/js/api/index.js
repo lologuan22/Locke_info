@@ -112,37 +112,44 @@ export const getPokemonDetail = (id) => request.get(`/api/pokemons/${id}`);
 
 /**
  * 获取用户背包列表
- * @param {Object} params
- * @param {number} [params.current=1]
- * @param {number} [params.size=10]
- * @returns {Promise<Object>} 返回 PokemonPageResult
  */
-export const getUserBackpack = (params) =>
-  request.get("/api/backpack", { params });
+export const getUserBackpack = (params) => {
+  const token = localStorage.getItem('token');
+  return request.get("/api/backpack", { 
+    params,
+    headers: { token }
+  });
+};
 
 /**
  * 添加宠物到背包
- * @param {number} pokemonId - 宠物唯一ID
- * @returns {Promise<Object>}
  */
-export const addToBackpack = (pokemonId) =>
-  request.post(`/api/backpack/${pokemonId}`);
+export const addToBackpack = (pokemonId) => {
+  const token = localStorage.getItem('token');
+  return request.post(`/api/backpack/${pokemonId}`, {}, {
+    headers: { token }
+  });
+};
 
 /**
  * 检查宠物是否已在背包中
- * @param {number} pokemonId
- * @returns {Promise<boolean>} 返回 ResultBoolean
  */
-export const checkIfOwned = (pokemonId) =>
-  request.get(`/api/backpack/check/${pokemonId}`);
+export const checkIfOwned = (pokemonId) => {
+  const token = localStorage.getItem('token');
+  return request.get(`/api/backpack/check/${pokemonId}`, {
+    headers: { token }
+  });
+};
 
 /**
  * 从背包中移除宠物
- * @param {number} pokemonId
- * @returns {Promise<Object>}
  */
-export const removeFromBackpack = (pokemonId) =>
-  request.delete(`/api/backpack/${pokemonId}`);
+export const removeFromBackpack = (pokemonId) => {
+  const token = localStorage.getItem('token');
+  return request.delete(`/api/backpack/${pokemonId}`, {
+    headers: { token }
+  });
+};
 
 /**
  * 测试接口
