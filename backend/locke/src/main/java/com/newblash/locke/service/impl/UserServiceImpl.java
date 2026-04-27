@@ -16,13 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -110,52 +105,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Value("${file.avatar-path}")
     private String avatarPath; // 用于头像图片
-
-    /**
-     * 头像上传专用接口
-     */
-    @Override
-    public String uploadFile(MultipartFile file) {
-        // 调用通用保存逻辑，指定子目录为 "avatars"，访问前缀为 "/api/avatars/"
-        return saveFile(file, "avatars", "/api/avatars/");
-    }
-
-    /**
-     * 通用的私有文件保存逻辑
-     * * @param file 文件流
-     * 
-     * @param physicalPath 物理存储的绝对路径 (直接由外部注入，如 avatarPath)
-     * @param uriPrefix    数据库存储的访问前缀 (如 /api/avatars/)
-     */
-    private String saveFile(MultipartFile file, String physicalPath, String uriPrefix) {
-        if (file.isEmpty()) {
-            throw new BaseException("上传文件不能为空");
-        }
-
-        // 1. 生成唯一文件名
-        String originalFilename = file.getOriginalFilename();
-        String suffix = (originalFilename != null && originalFilename.contains("."))
-                ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                : "";
-        String newFileName = UUID.randomUUID().toString() + suffix;
-
-        try {
-            // 2. 确定物理存储全路径
-            // 直接使用传入的物理路径，确保它和 WebConfig 里的配置是一致的
-            File destDir = new File(physicalPath);
-            if (!destDir.exists()) {
-                destDir.mkdirs();
-            }
-
-            // 3. 物理保存 (使用 destDir 目录和文件名构建完整文件对象)
-            file.transferTo(new File(destDir, newFileName));
-
-            // 4. 返回前端访问路径：/api/avatars/xxxx.jpg
-            return uriPrefix + newFileName;
-        } catch (IOException e) {
-            throw new BaseException("文件存储失败" + e.getMessage());
-        }
-    }
 
     @Override
     @Transactional

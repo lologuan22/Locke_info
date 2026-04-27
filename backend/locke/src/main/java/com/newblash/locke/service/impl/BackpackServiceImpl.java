@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.newblash.locke.entity.Pokemon;
 import com.newblash.locke.entity.User;
 import com.newblash.locke.entity.UserPokemon;
+import com.newblash.locke.exception.BaseException;
 import com.newblash.locke.mapper.BackpackMapper; 
 import com.newblash.locke.service.BackpackService;
 import com.newblash.locke.service.UserService;
@@ -42,7 +43,7 @@ public Page<Pokemon> getUserPokemonPage(Integer current, Integer size, String ty
 
         // 检查是否已经拥有
         if (this.isPokemonOwned(pokemonId)) {
-            throw new RuntimeException("该宠物已在背包中");
+            throw new BaseException("该宠物已在背包中");
         }
 
         UserPokemon userPokemon = new UserPokemon();

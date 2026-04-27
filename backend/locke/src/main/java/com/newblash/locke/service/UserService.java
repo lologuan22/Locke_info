@@ -1,7 +1,5 @@
 package com.newblash.locke.service;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import com.newblash.locke.entity.User;
 import com.newblash.locke.vo.LoginVO;
 import com.newblash.locke.entity.RegisterDTO;
@@ -26,6 +24,4 @@ public interface UserService {
     User getCurrentUser();
 
     User updateUserProfile(User user);
-
-    String uploadFile(MultipartFile file);
 }

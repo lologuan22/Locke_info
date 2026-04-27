@@ -4,6 +4,7 @@ import com.newblash.locke.common.Result;
 import com.newblash.locke.entity.LoginDTO;
 import com.newblash.locke.entity.RegisterDTO;
 import com.newblash.locke.entity.User;
+import com.newblash.locke.service.FileService;
 import com.newblash.locke.service.UserService;
 import com.newblash.locke.vo.LoginVO;
 
@@ -30,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final UserService userService;
+    private final FileService fileService; // 注入接口
 
     @Operation(summary = "用户登录", responses = {
             @ApiResponse(responseCode = "200", description = "登录成功", content = @Content(schema = @Schema(implementation = LoginVO.class)))
@@ -47,13 +49,9 @@ public class UserController {
     @Operation(summary = "用户注册", description = "创建新用户账号")
     @PostMapping("/register")
     public Result<String> register(@RequestBody RegisterDTO registerDTO) {
-        try {
-            userService.register(registerDTO);
-            return Result.success("注册成功");
-        } catch (RuntimeException e) {
-            // 例如：用户名已存在、密码强度不够等
-            return Result.error(e.getMessage());
-        }
+
+        userService.register(registerDTO);
+        return Result.success("注册成功");
     }
 
     @Operation(summary = "获取当前用户信息", description = "根据 Token 获取已登录用户的详细资料")
@@ -78,15 +76,10 @@ public class UserController {
         return Result.success(updatedUser);
     }
 
-    @Operation(summary = "上传头像图片", description = "上传图片并返回可访问的 URL")
+    @Operation(summary = "上传头像图片")
     @PostMapping("/upload/avatar")
-    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        try {
-            // 逻辑：1. 校验文件格式；2. 保存到本地或云端；3. 返回访问路径
-            String avatarUrl = userService.uploadFile(file);
-            return Result.success(avatarUrl);
-        } catch (Exception e) {
-            return Result.error("头像上传失败：" + e.getMessage());
-        }
+    public Result<String> uploadAvatar(@RequestParam MultipartFile file) {
+        String avatarUrl = fileService.uploadAvatar(file);
+        return Result.success(avatarUrl);
     }
 }
