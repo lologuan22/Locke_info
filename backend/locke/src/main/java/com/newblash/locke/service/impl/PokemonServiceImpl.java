@@ -3,7 +3,6 @@ package com.newblash.locke.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.newblash.locke.entity.Pokemon;
 import com.newblash.locke.entity.PokemonStats;
-import com.newblash.locke.entity.Skill;
 import com.newblash.locke.mapper.PokemonMapper;
 import com.newblash.locke.mapper.PokemonStatsMapper;
 import com.newblash.locke.mapper.SkillMapper;

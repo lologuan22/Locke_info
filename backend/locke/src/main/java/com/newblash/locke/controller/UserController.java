@@ -4,7 +4,10 @@ import com.newblash.locke.common.Result;
 import com.newblash.locke.entity.LoginDTO;
 import com.newblash.locke.entity.RegisterDTO;
 import com.newblash.locke.entity.User;
+import com.newblash.locke.service.FileService;
 import com.newblash.locke.service.UserService;
+import com.newblash.locke.vo.LoginVO;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,8 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Map;
-
 @Tag(name = "用户认证", description = "处理用户登录、注销及权限验证相关接口")
 @RestController
 @RequestMapping("/api/user")
@@ -30,16 +31,16 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final FileService fileService; // 注入接口
 
-    @Operation(summary = "用户登录", description = "根据用户名和密码获取 Token 及用户信息", responses = {
-            @ApiResponse(responseCode = "200", description = "登录成功", content = @Content(schema = @Schema(implementation = LoginResult.class))),
-            @ApiResponse(responseCode = "400", description = "用户名或密码错误", content = @Content)
+    @Operation(summary = "用户登录", responses = {
+            @ApiResponse(responseCode = "200", description = "登录成功", content = @Content(schema = @Schema(implementation = LoginVO.class)))
     })
     @PostMapping("/login")
-    public Result<Map<String, Object>> login(@RequestBody LoginDTO loginDTO) {
+    public Result<LoginVO> login(@RequestBody LoginDTO loginDTO) {
         try {
-            Map<String, Object> data = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
-            return Result.success(data);
+            LoginVO loginVO = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
+            return Result.success(loginVO);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
@@ -48,13 +49,9 @@ public class UserController {
     @Operation(summary = "用户注册", description = "创建新用户账号")
     @PostMapping("/register")
     public Result<String> register(@RequestBody RegisterDTO registerDTO) {
-        try {
-            userService.register(registerDTO);
-            return Result.success("注册成功");
-        } catch (RuntimeException e) {
-            // 例如：用户名已存在、密码强度不够等
-            return Result.error(e.getMessage());
-        }
+
+        userService.register(registerDTO);
+        return Result.success("注册成功");
     }
 
     @Operation(summary = "获取当前用户信息", description = "根据 Token 获取已登录用户的详细资料")
@@ -79,22 +76,10 @@ public class UserController {
         return Result.success(updatedUser);
     }
 
-    @Operation(summary = "上传头像图片", description = "上传图片并返回可访问的 URL")
+    @Operation(summary = "上传头像图片")
     @PostMapping("/upload/avatar")
-    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
-        try {
-            // 逻辑：1. 校验文件格式；2. 保存到本地或云端；3. 返回访问路径
-            String avatarUrl = userService.uploadFile(file);
-            return Result.success(avatarUrl);
-        } catch (Exception e) {
-            return Result.error("头像上传失败：" + e.getMessage());
-        }
-    }
-
-    // 辅助类：仅用于在 Swagger 文档中展示 Map 的结构
-    // 如果你将来把 Map 改为具体的类（推荐），这个类就可以删掉
-    private static class LoginResult extends Result<Map<String, Object>> {
-        @Schema(description = "包含 token 和 userInfo 的键值对", example = "{ \"token\": \"ey...\", \"userInfo\": {...} }")
-        private Map<String, Object> data;
+    public Result<String> uploadAvatar(@RequestParam MultipartFile file) {
+        String avatarUrl = fileService.uploadAvatar(file);
+        return Result.success(avatarUrl);
     }
 }
