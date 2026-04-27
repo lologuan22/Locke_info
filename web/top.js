@@ -13,7 +13,7 @@ let currentPage = 1;
 const BASE_URL = 'http://172.17.79.7:8080';
 
 // ======================
-// 保持登录状态
+// 保持登录状态（修复：去掉 /api/ 前缀）
 // ======================
 function keepLoginStatus() {
     try {
@@ -22,9 +22,12 @@ function keepLoginStatus() {
         if (user && token) {
             document.querySelector('.log').style.display = 'none';
             const avatar = document.getElementById('userAvatar');
-            const savedAvatar = localStorage.getItem('localAvatar');
-            const finalAvatar = savedAvatar || user.avatar || './img/default-avatar.png';
-            avatar.src = finalAvatar;
+            if (user.avatar) {
+                let avatarUrl = user.avatar.replace("/api", "");
+                avatar.src = BASE_URL + avatarUrl;
+            } else {
+                avatar.src = './img/default-avatar.png';
+            }
             avatar.style.display = 'block';
         }
     } catch (e) { }
@@ -166,14 +169,14 @@ const renderList = (list, ownedIds = []) => {
 
 // 渲染背包
 export const renderBackpack = (list) => {
-  const container = document.getElementById('backpack-list');
-  if (!container) return;
-  if (!list || list.length === 0) {
-    container.innerHTML = '<p>收藏夹里还没有这类精灵</p>';
-    return;
-  }
+    const container = document.getElementById('backpack-list');
+    if (!container) return;
+    if (!list || list.length === 0) {
+        container.innerHTML = '<p>收藏夹里还没有这类精灵</p>';
+        return;
+    }
 
-  container.innerHTML = list.map(item => `
+    container.innerHTML = list.map(item => `
     <div class="card" style="background:${getBgColor(item.type1)}">
       <div class="img-placeholder" onclick="showDetail(${item.id})">
         <img src="${BASE_URL}${item.imageUrl || ''}" alt="${item.name}">
@@ -186,89 +189,87 @@ export const renderBackpack = (list) => {
 
 // 添加到收藏
 window.addToMyBag = async (pokemonId, e) => {
-  e.stopPropagation();
-  try {
-    await api.addToBackpack(pokemonId);
-    await Promise.all([loadList(), loadBackpack()]);
-  } catch (err) {
-    console.error(err);
-    alert('操作失败');
-  }
+    e.stopPropagation();
+    try {
+        await api.addToBackpack(pokemonId);
+        await Promise.all([loadList(), loadBackpack()]);
+    } catch (err) {
+        console.error(err);
+        alert('操作失败');
+    }
 };
 
 // 移除出背包
 window.removeFromMyBag = async (pokemonId, e) => {
-  e.stopPropagation();
-  try {
-    await api.removeFromBackpack(pokemonId);
-    await Promise.all([loadList(), loadBackpack()]);
-  } catch (err) {
-    console.error(err);
-    alert('操作失败');
-  }
+    e.stopPropagation();
+    try {
+        await api.removeFromBackpack(pokemonId);
+        await Promise.all([loadList(), loadBackpack()]);
+    } catch (err) {
+        console.error(err);
+        alert('操作失败');
+    }
 };
 
 // 加载背包（支持筛选）
 export const loadBackpack = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      document.getElementById('backpack-list').innerHTML = '<p>请先登录查看收藏</p>';
-      return;
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            document.getElementById('backpack-list').innerHTML = '<p>请先登录查看收藏</p>';
+            return;
+        }
+
+        const name = document.getElementById('backpackNameSearch').value.trim();
+        const type = document.getElementById('backpackTypeSearch').value;
+
+        const res = await api.getUserBackpack({ current: 1, size: 100 });
+        let list = res.data?.records || [];
+
+        if (name) list = list.filter(item => item.name.includes(name));
+        if (type) list = list.filter(item => item.type1 === type);
+
+        renderBackpack(list);
+    } catch (err) {
+        document.getElementById('backpack-list').innerHTML = '<p>请先登录</p>';
+        console.error('加载收藏失败', err);
     }
-
-    const name = document.getElementById('backpackNameSearch').value.trim();
-    const type = document.getElementById('backpackTypeSearch').value;
-    
-    const res = await api.getUserBackpack({ current: 1, size: 100 });
-    let list = res.data?.records || [];
-
-    if (name) list = list.filter(item => item.name.includes(name));
-    if (type) list = list.filter(item => item.type1 === type);
-
-    renderBackpack(list);
-  } catch (err) {
-    document.getElementById('backpack-list').innerHTML = '<p>请先登录</p>';
-    console.error('加载收藏失败', err);
-  }
 };
-// 🔥 修复：挂载到全局，让HTML的onclick能调用
 window.loadBackpack = loadBackpack;
 
 // 加载精灵列表
 export const loadList = async () => {
-  const container = document.getElementById('display-list');
-  if (!container) return;
+    const container = document.getElementById('display-list');
+    if (!container) return;
 
-  const params = {
-    current: 1, size: 1000,
-    name: document.getElementById('nameSearch')?.value.trim() || undefined,
-    type: document.getElementById('typeSearch')?.value || undefined,
-    sort: 'id', order: 'asc'
-  };
+    const params = {
+        current: 1, size: 1000,
+        name: document.getElementById('nameSearch')?.value.trim() || undefined,
+        type: document.getElementById('typeSearch')?.value || undefined,
+        sort: 'id', order: 'asc'
+    };
 
-  try {
-    const res = await api.getPokemonList(params);
-    const list = res.data?.records || [];
-
-    let ownedIds = [];
     try {
-      if (localStorage.getItem('token')) {
-        const backpackRes = await api.getUserBackpack({ current: 1, size: 100 });
-        ownedIds = (backpackRes.data?.records || []).map(item => Number(item.id));
-      }
-    } catch (e) {
-      console.log('获取背包失败', e);
-    }
+        const res = await api.getPokemonList(params);
+        const list = res.data?.records || [];
 
-    renderList(list, ownedIds);
-  } catch (err) {
-    console.error('加载列表失败', err);
-    container.innerHTML = '<p>请求失败</p>';
-  }
+        let ownedIds = [];
+        try {
+            if (localStorage.getItem('token')) {
+                const backpackRes = await api.getUserBackpack({ current: 1, size: 100 });
+                ownedIds = (backpackRes.data?.records || []).map(item => Number(item.id));
+            }
+        } catch (e) {
+            console.log('获取背包失败', e);
+        }
+
+        renderList(list, ownedIds);
+    } catch (err) {
+        console.error('加载列表失败', err);
+        container.innerHTML = '<p>请求失败</p>';
+    }
 };
 
-// 跳转详情
 window.showDetail = (id) => location.href = `details.html?id=${id}`;
 window.loadList = loadList;
 
@@ -317,50 +318,82 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 初始化用户面板
+// 初始化用户面板（修复：去掉 /api/）
 function initUserPanel() {
     try {
-        let user = JSON.parse(localStorage.getItem('userInfo'));
-        if (user && popupName && popupAvatar) {
-            popupName.innerText = user.nickname || '用户';
-            const savedAvatar = localStorage.getItem('localAvatar');
-            popupAvatar.src = savedAvatar || user.avatar || './img/default-avatar.png';
+        let user = JSON.parse(localStorage.getItem('userInfo')) || {};
+        popupName.innerText = user.nickname || '用户';
+        if (user.avatar) {
+            let avatarUrl = user.avatar.replace("/api", "");
+            popupAvatar.src = BASE_URL + avatarUrl;
+            avatarImg.src = BASE_URL + avatarUrl;
+        } else {
+            popupAvatar.src = './img/default-avatar.png';
+            avatarImg.src = './img/default-avatar.png';
         }
     } catch (e) { }
 }
 
 changeAvatarBtn.onclick = () => avatarInput.click();
 
-// 头像上传
+// ========== 头像上传（修复：去掉 /api/） ==========
 avatarInput.onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        try {
-            const base64Url = e.target.result;
-            avatarImg.src = base64Url;
-            popupAvatar.src = base64Url;
-            localStorage.setItem('localAvatar', base64Url);
-            popup.classList.remove('show');
-        } catch (err) {
-            console.error(err);
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("请先登录！");
+        return;
+    }
+
+    try {
+        // 1. 上传图片，拿到后端返回的地址
+        const uploadRes = await api.uploadAvatar(file);
+        if (uploadRes.code !== 200) {
+            alert("图片上传失败");
+            return;
         }
-    };
-    reader.readAsDataURL(file);
+        const avatarPath = uploadRes.data;
+
+        // 2. 关键！调用 updateProfile，把地址存进用户信息
+        const updateRes = await api.updateProfile({
+            avatar: avatarPath
+        });
+        if (updateRes.code !== 200) {
+            alert("用户信息更新失败");
+            return;
+        }
+
+        // 3. 重新拉取最新的用户信息（确保本地和数据库一致）
+        const userRes = await api.getCurrentUserInfo();
+        localStorage.setItem('userInfo', JSON.stringify(userRes.data));
+
+        // 4. 前端显示头像
+        const realPath = avatarPath.replace("/api", "");
+        const fullUrl = BASE_URL + realPath;
+        avatarImg.src = fullUrl;
+        popupAvatar.src = fullUrl;
+
+        popup.classList.remove('show');
+        alert("✅ 头像上传并保存成功！");
+
+        // 刷新显示
+        keepLoginStatus();
+        initUserPanel();
+    } catch (err) {
+        console.error(err);
+        alert("上传异常，请重试！");
+    }
 };
 
 // 退出登录
 logoutBtn.onclick = async () => {
     try {
-        const { logout } = await import('./js/api/index.js');
-        await logout();
-    } catch (e) { }
-
+        await api.logout();
+    } catch (e) {}
     localStorage.removeItem("token");
-    localStorage.setItem("userInfo", "{}");
-    localStorage.removeItem("localAvatar");
+    localStorage.removeItem("userInfo");
     location.reload();
 };
 
@@ -386,7 +419,6 @@ editNickBtn.onclick = async () => {
         alert('昵称不能超过12位');
         return;
     }
-
     try {
         let user = JSON.parse(localStorage.getItem('userInfo')) || {};
         user.nickname = newNick;
@@ -399,41 +431,28 @@ editNickBtn.onclick = async () => {
     }
 };
 
-// 🔥 一键清空收藏/背包
+// 清空收藏
 window.clearBackpack = async () => {
-  // 防误触：确认弹窗
-  if (!confirm('⚠️ 确定要清空【所有收藏】吗？\n此操作不可恢复！')) {
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('请先登录！');
-      return;
+    if (!confirm('⚠️ 确定要清空【所有收藏】吗？\n此操作不可恢复！')) return;
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('请先登录！');
+            return;
+        }
+        const res = await api.getUserBackpack({ current: 1, size: 100 });
+        const list = res.data?.records || [];
+        if (list.length === 0) {
+            alert('收藏夹已经是空的啦！');
+            return;
+        }
+        for (let item of list) {
+            await api.removeFromBackpack(item.id);
+        }
+        await Promise.all([loadList(), loadBackpack()]);
+        alert('✅ 清空收藏成功！');
+    } catch (err) {
+        console.error(err);
+        alert('❌ 清空失败');
     }
-
-    // 1. 获取当前所有收藏数据
-    const res = await api.getUserBackpack({ current: 1, size: 100 });
-    const pokemonList = res.data?.records || [];
-
-    // 空数据判断
-    if (pokemonList.length === 0) {
-      alert('收藏夹已经是空的啦！');
-      return;
-    }
-
-    // 2. 循环删除所有精灵
-    for (let item of pokemonList) {
-      await api.removeFromBackpack(item.id);
-    }
-
-    // 3. 刷新列表 + 收藏
-    await Promise.all([loadList(), loadBackpack()]);
-    alert('✅ 清空收藏成功！');
-
-  } catch (err) {
-    console.error('清空收藏失败', err);
-    alert('❌ 清空失败，请稍后重试！');
-  }
 };
