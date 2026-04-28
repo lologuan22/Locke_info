@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>宠物详情 - 洛克王国图鉴</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="./css/header-styles.css">
+  <link rel="stylesheet" href="./css/auth-modal.css">
+  <link rel="stylesheet" href="./css/user-panel.css">
+  <link rel="stylesheet" href="./css/detail.css" />
+</head>
+
+<body>
+  <div id="app" class="container" v-cloak>
+    <common-header></common-header>
+
+    <div v-if="loading" class="loading">加载中...</div>
+
+    <template v-else-if="pet">
+    </template>
+
+    <div v-else class="loading">未找到该宠物信息</div>
+  </div>
+
+  <script type="module">
+    import { getPokemonDetail } from './js/api/index.js';
+    import CommonHeader from './js/components/header/HeaderContainer.js';
+    const app = Vue.createApp({
+      data() {
+        return {
+          pet: null,
+          loading: true,
+          myChart: null
+        };
+      },
+      mounted() {
+        this.fetchData();
+        window.addEventListener('resize', () => {
+          this.myChart && this.myChart.resize();
+        });
+      },
+      methods: {
+        getQueryParam(name) {
+          const urlParams = new URLSearchParams(window.location.search);
+          return urlParams.get(name);
+        },
+        async fetchData() {
+          const id = this.getQueryParam('id');
+          try {
+            const res = await getPokemonDetail(id);
+            if (res.code === 200) {
+              this.pet = res.data;
+              // 使用 nextTick 确保 DOM 更新后初始化图表
+              Vue.nextTick(() => {
+                this.initChart(this.pet.radarData);
+              });
+            }
+          } catch (err) {
+            console.error("数据加载失败", err);
+          } finally {
+            this.loading = false;
+          }
+        },
+        initChart(radarData) {
+          const chartDom = document.getElementById('radarChart');
+          if (!chartDom || !radarData) return;
+
+          const formattedData = Array.isArray(radarData) ? radarData : [];
+          this.myChart = echarts.init(chartDom);
+
+          const option = {
+            title: { text: '能力分布', left: 'center' },
+            tooltip: {},
+            radar: {
+              indicator: [
+                { name: '精力', max: 200 },
+                { name: '攻击', max: 200 },
+                { name: '防御', max: 200 },
+                { name: '魔攻', max: 200 },
+                { name: '魔抗', max: 200 },
+                { name: '速度', max: 200 }
+              ],
+              shape: 'circle'
+            },
+            series: [{
+              type: 'radar',
+              data: [{
+                value: formattedData,
+                name: '种族值',
+                areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
+                lineStyle: { color: '#1890ff', width: 2 }
+              }]
+            }]
+          };
+          this.myChart.setOption(option);
+        }
+      }
+    });
+
+    // 3. 注册并挂载（顺序很重要：先注册组件，再挂载应用）
+    app.component('common-header', CommonHeader);
+    app.mount('#app');
+  </script>
+</body>
+
+</html>

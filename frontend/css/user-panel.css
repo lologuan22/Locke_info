@@ -1,0 +1,108 @@
+/* 用户头像区域 */
+.user-area {
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid #ECF0F1;
+}
+
+/* 弹出层面板 */
+.avatar-popup {
+    display: none; /* 默认隐藏 */
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 220px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    padding: 20px;
+    flex-direction: column;
+    align-items: center;
+    z-index: 101;
+}
+
+/* 当含有 .show 类时显示 */
+.avatar-popup.show {
+    display: flex;
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.avatar-big {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    object-fit: cover;
+}
+
+.username {
+    font-weight: bold;
+    color: #2C3E50;
+    font-size: 16px;
+}
+
+/* 昵称修改区域 */
+.nickname-edit-wrap {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.nickname-edit-wrap input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #DCDFE6;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.nickname-edit-wrap button {
+    padding: 5px 10px;
+    background: #2ECC71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* 操作按钮 */
+.btn {
+    width: 100%;
+    padding: 8px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-change {
+    background: #F3F4F6;
+    color: #34495E;
+}
+
+.btn-change:hover {
+    background: #E5E7EB;
+}
+
+.btn-logout {
+    background: #E74C3C;
+    color: white;
+}
+
+.btn-logout:hover {
+    background: #C0392B;
+}

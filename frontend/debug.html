@@ -1,9 +1,15 @@
+<head>
+<link rel="stylesheet" href="./css/header-styles.css">
+<link rel="stylesheet" href="./css/auth-modal.css">
+<link rel="stylesheet" href="./css/user-panel.css">
+</head>
+
 <div id="main-app">
     <common-header></common-header>
 </div>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script type="module">
-    import CommonHeader from './header-component.js';
+    import CommonHeader from './js/components/header/HeaderContainer.js';
     const app = Vue.createApp({});
     app.component('common-header', CommonHeader);
     app.mount('#main-app');

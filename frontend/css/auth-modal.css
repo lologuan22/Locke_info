@@ -1,0 +1,80 @@
+/* 模态框背景 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 模态框内容卡片 */
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 350px;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.close-btn {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #95A5A6;
+}
+
+.login-form h2 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #2C3E50;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #7F8C8D;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #DCDFE6;
+    border-radius: 4px;
+    box-sizing: border-box; /* 确保padding不撑开宽度 */
+}
+
+.login-form button {
+    width: 100%;
+    padding: 12px;
+    background: #3498DB;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.login-form button:disabled {
+    background: #BDC3C7;
+}
+
+.toggle-text {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #3498DB;
+    cursor: pointer;
+}

@@ -1,4 +1,4 @@
-import * as api from "../js/api/index.js";
+import * as api from "../../api/index.js";
 
 export const AuthService = {
   // 基础配置

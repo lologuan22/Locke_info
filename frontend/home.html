@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>洛克王国wiki - 列表页</title>
+    <link rel="stylesheet" href="./css/header-styles.css" />
+    <link rel="stylesheet" href="./css/auth-modal.css">
+    <link rel="stylesheet" href="./css/user-panel.css">
+    <link rel="stylesheet" href="./css/home.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+    <div id="app" class="main" v-cloak>
+        <common-header></common-header>
+
+        <div class="map">
+            <div class="map-header">
+
+                <div class="search-bar">
+                    <input type="text" v-model="filter.name" placeholder="搜索精灵名称" />
+                    <select v-model="filter.type">
+                        <option value="">全部属性</option>
+                        <option v-for="t in types" :key="t" :value="t">{{t}}</option>
+                    </select>
+                    <button @click="fetchList" class="btn-search">查询</button>
+                </div>
+                <a href="#" class="map-link">
+                    <img id="map_in_bt" src="./img/imgmap.png" alt="地图入口" />
+                </a>
+            </div>
+
+            <div class="scroll-container">
+                <div v-if="allPets.length === 0">未查询到精灵</div>
+                <div v-for="pet in allPets" :key="pet.id" class="pet-card" @click="goToDetail(pet.id)">
+                    <img :src="'http://172.17.79.7:8080' + pet.imageUrl" alt="">
+                    <p>{{pet.name}}</p>
+                    <small>{{pet.type1}}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="map backpack-map">
+            <div class="map-header">
+
+
+                <div class="search-bar">
+                    <input type="text" v-model="backpackFilter.name" placeholder="搜索已收藏精灵名称" />
+                    <select v-model="backpackFilter.type">
+                        <option value="">全部属性</option>
+                        <option v-for="t in types" :key="t" :value="t">{{t}}</option>
+                    </select>
+                    <button @click="fetchBackpack" class="btn-search">查询</button>
+                    <button @click="clearBackpack" class="btn-clear">清空收藏</button>
+                </div>
+                <a href="#" class="map-link">
+                    <img id="map_in_bt" src="./img/mylike.png" alt="我的收藏" />
+                </a>
+            </div>
+
+            <div class="scroll-container">
+                <div v-if="!isLoggedIn">请先登录查看收藏</div>
+                <div v-else-if="backpackPets.length === 0">暂无收藏精灵</div>
+                <div v-for="pet in backpackPets" :key="pet.id" class="pet-card" @click="goToDetail(pet.id)">
+                    <img :src="'http://172.17.79.7:8080' + pet.imageUrl" alt="">
+                    <p>{{pet.name}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="module">
+        import CommonHeader from './js/components/header/HeaderContainer.js';
+        import {
+            getPokemonList,
+            getUserBackpack,
+            removeFromBackpack,
+            getCurrentUserInfo
+        } from './js/api/index.js';
+
+        // Vue 3 创建实例
+        const app = Vue.createApp({
+            // data 必须是函数返回对象
+            data() {
+                return {
+                    types: ['水', '火', '草', '光', '翼', '电', '冰', '武', '土', '虫', '幽灵', '恶魔', '龙', '毒'],
+                    allPets: [],
+                    backpackPets: [],
+                    isLoggedIn: false,
+                    filter: {
+                        name: '',
+                        type: '',
+                        current: 1,
+                        size: 20
+                    },
+                    backpackFilter: {
+                        name: '',
+                        type: ''
+                    }
+                }
+            },
+            async created() {
+                await this.checkLoginStatus();
+                this.fetchList();
+                this.fetchBackpack();
+            },
+            methods: {
+                async checkLoginStatus() {
+                    try {
+                        const res = await getCurrentUserInfo();
+                        if (res.code === 200) {
+                            this.isLoggedIn = true;
+                        }
+                    } catch (err) {
+                        this.isLoggedIn = false;
+                    }
+                },
+                async fetchList() {
+                    try {
+                        const res = await getPokemonList({
+                            name: this.filter.name,
+                            type: this.filter.type,
+                            current: this.filter.current,
+                            size: this.filter.size
+                        });
+                        if (res.code === 200) {
+                            this.allPets = res.data.records || res.data;
+                        }
+                    } catch (err) {
+                        console.error("加载精灵列表失败", err);
+                    }
+                },
+                async fetchBackpack() {
+                    if (!this.isLoggedIn) return;
+                    try {
+                        const res = await getUserBackpack(this.backpackFilter);
+                        if (res.code === 200) {
+                            this.backpackPets = res.data.records || res.data;
+                        }
+                    } catch (err) {
+                        console.warn("获取收藏失败", err);
+                    }
+                },
+                goToDetail(id) {
+                    window.location.href = `./details.html?id=${id}`;
+                },
+                async clearBackpack() {
+                    if (!this.backpackPets.length) return;
+                    if (confirm('确定要移除当前列表下的所有收藏吗？')) {
+                        try {
+                            const promises = this.backpackPets.map(pet => removeFromBackpack(pet.id));
+                            await Promise.all(promises);
+                            this.fetchBackpack();
+                        } catch (err) {
+                            alert("清空失败");
+                        }
+                    }
+                }
+            }
+        });
+
+        app.component('common-header', CommonHeader);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

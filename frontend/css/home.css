@@ -1,0 +1,185 @@
+/* 主容器：为固定顶栏留出空间 */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100px 20px 40px; /* 顶部留够 100px 避开 .hud */
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: "Microsoft YaHei", sans-serif;
+}
+
+/* 外层区块容器（地图/收藏） */
+.map {
+  width: 100%;
+  background-color: #ffffff;
+  border: 2px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  margin-bottom: 30px;
+  overflow: hidden;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.backpack-map {
+  border-color: #d9f29a; /* 收藏区颜色区分 */
+}
+
+/* 标题与搜索栏区域 */
+.map-header {
+  display: flex;
+  align-items: center; 
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* 搜索栏样式优化 */
+.search-bar {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-bar input, 
+.search-bar select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-bar input:focus, 
+.search-bar select:focus {
+  border-color: #3498DB;
+}
+
+.btn-search, .btn-clear {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s;
+}
+
+.btn-search {
+  background-color: #3498DB;
+  color: white;
+}
+
+.btn-clear {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-search:hover, .btn-clear:hover {
+  opacity: 0.8;
+}
+
+/* 右侧图标入口 */
+
+.map-link {
+  flex: 0 0 200px;
+}
+
+#map_in_bt {
+  width: 200px;   
+  height: auto;
+  display: block;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+
+#map_in_bt:hover {
+  transform: rotate(5deg) scale(1.1);
+}
+
+/* 横向滚动容器 */
+.scroll-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 5px 20px;
+  scroll-behavior: smooth;
+  min-height: 180px;
+}
+
+/* 美化滚动条 (仅限 Webkit 浏览器) */
+.scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #d9f29a;
+  border-radius: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #c5e07d;
+}
+
+/* 精灵卡片样式 */
+.pet-card {
+  flex: 0 0 130px;
+  background: #fcfcfc;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pet-card:hover {
+  transform: translateY(-5px);
+  background: #fff;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  border-color: #3498DB;
+}
+
+.pet-card img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.pet-card p {
+  margin: 5px 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.pet-card small {
+  display: inline-block;
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #666;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .map-header {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+  }
+  .search-bar {
+    width: 100%;
+  }
+  .map-link {
+    align-self: center;
+  }
+}
