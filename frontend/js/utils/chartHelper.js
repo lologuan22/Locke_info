@@ -5,12 +5,12 @@ export const getRadarOption = (rawData) => {
     tooltip: { trigger: 'item' },
     radar: {
       indicator: [
-        { name: '精力', max: 200 },
-        { name: '攻击', max: 200 },
-        { name: '防御', max: 200 },
-        { name: '魔攻', max: 200 },
-        { name: '魔抗', max: 200 },
-        { name: '速度', max: 200 }
+        { name: '精力', max: 100 },
+        { name: '攻击', max: 100 },
+        { name: '防御', max: 100 },
+        { name: '魔攻', max: 100 },
+        { name: '魔抗', max: 100 },
+        { name: '速度', max: 100 }
       ],
       radius: '60%'
     },

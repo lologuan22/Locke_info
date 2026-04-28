@@ -17,7 +17,7 @@ export default {
             </div>
         </div>
     </div>`,
-  setup() {
+  setup(props,{ emit }) {
     const { ref, reactive, computed, onMounted } = Vue;
     const showModal = ref(false);
     const isLoggedIn = ref(false);
@@ -26,7 +26,9 @@ export default {
     const userAvatarUrl = computed(() => {
       const path = userInfo.value.avatarUrl;
       if (!path) console.warn("用户信息中缺少 avatarUrl 字段");
-      return path.startsWith("http") ? path : `${BASE_URL}/${path.replace(/^\//, '')}`;
+      return path.startsWith("http")
+        ? path
+        : `${BASE_URL}/${path.replace(/^\//, "")}`;
     });
 
     const initAuth = () => {
@@ -40,6 +42,8 @@ export default {
     const handleAuthSuccess = () => {
       initAuth();
       showModal.value = false;
+      // 在登录成功的逻辑里
+      emit("login-success");
     };
 
     const onUserUpdate = (newInfo) => {
@@ -49,6 +53,13 @@ export default {
 
     onMounted(initAuth);
 
-    return { showModal, isLoggedIn, userInfo, userAvatarUrl, handleAuthSuccess, onUserUpdate };
-  }
+    return {
+      showModal,
+      isLoggedIn,
+      userInfo,
+      userAvatarUrl,
+      handleAuthSuccess,
+      onUserUpdate,
+    };
+  },
 };

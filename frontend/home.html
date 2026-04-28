@@ -16,7 +16,7 @@
 <body>
 
     <div id="app" class="main" v-cloak>
-        <common-header></common-header>
+        <common-header @login-success="onLoginSuccess"></common-header>
 
         <div class="map">
             <div class="map-header">
@@ -144,6 +144,11 @@
                 this.fetchList();
             },
             methods: {
+                async onLoginSuccess() {
+                    this.isLoggedIn = true;
+                    await this.fetchBackpack(); // 重新拉取收藏列表
+                    this.fetchList();           // 刷新主列表以同步“已收藏”按钮状态
+                },
                 async checkLoginStatus() {
                     const userInfo = await handleApi(getCurrentUserInfo());
                     this.isLoggedIn = !!userInfo;
