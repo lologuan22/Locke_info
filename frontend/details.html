@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./css/header-styles.css">
   <link rel="stylesheet" href="./css/auth-modal.css">
   <link rel="stylesheet" href="./css/user-panel.css">
+  <link rel="stylesheet" href="./css/home.css">
   <link rel="stylesheet" href="./css/detail.css" />
 </head>
 
@@ -64,6 +65,42 @@
             </div>
           </div>
         </div>
+
+        <div class="info-card compare-selector-section">
+          <h3>寻找对手进行对比</h3>
+
+          <div class="search-bar" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" v-model="compareFilter.name" placeholder="搜索精灵名称" @keyup.enter="fetchCompareList"
+              style="flex: 1; padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd;">
+            <button @click="fetchCompareList" class="btn-search"
+              style="padding: 8px 25px; border-radius: 20px; background: #1890ff; color: white; border: none; cursor: pointer;">搜索</button>
+          </div>
+
+          <div class="scroll-container"
+            style="display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; min-height: 150px;">
+            <div v-for="target in compareList" :key="target.id"
+              :class="['pet-card', { 'selected-target': selectedCompareId === target.id }]"
+              @click="selectedCompareId = target.id"
+              style="flex: 0 0 120px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; padding: 10px; text-align: center; background: #f9f9f9; border-radius: 12px;">
+              <img :src="'http://172.17.79.7:8080' + target.imageUrl"
+                style="width: 80px; height: 80px; object-fit: contain;">
+              <p style="font-size: 14px; margin: 5px 0;">{{ target.name }}</p>
+              <small style="color: #666;">{{ target.type1 }}</small>
+            </div>
+            <div v-if="compareList.length === 0"
+              style="color: #999; width: 100%; text-align: center; padding-top: 50px;">
+              输入名称搜索对比目标...
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <button @click="goCompare" :disabled="!selectedCompareId" :style="{ opacity: selectedCompareId ? 1 : 0.5 }"
+              style="background: linear-gradient(45deg, #ff4d4f, #ff7875); color: white; border: none; padding: 10px 40px; border-radius: 25px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255,77,79,0.3);">
+              开始对比
+            </button>
+          </div>
+        </div>
+
         <div class="skill-section">
           <h3>技能列表</h3>
           <table>
@@ -110,7 +147,15 @@
     data() {
       return {
         pet: null,
-        loading: true
+        loading: true,
+        // --- 对比功能所需数据 ---
+        compareList: [],
+        selectedCompareId: null,
+        compareFilter: {
+          name: '',
+          current: 1,
+          size: 10
+        }
       };
     },
     computed: {
@@ -124,15 +169,40 @@
           this.pet = await fetchPetDetail();
           this.loading = false;
 
-          if (this.pet.radarData) {
+          if (this.pet && this.pet.radarData) {
             this.$nextTick(() => {
               chartCtrl.render(this.$refs.radarChartRef, this.pet.radarData);
             });
           }
+
+          // 只有在获取到主宠物信息后，才去加载对比列表
+          await this.fetchCompareList();
         } catch (err) {
           console.error('页面初始化失败:', err);
           this.loading = false;
         }
+      },
+
+      // --- 注意：这两个方法现在正确地放在了 methods 内部 ---
+      async fetchCompareList() {
+        try {
+          // 这里动态导入 API
+          const { getPokemonList } = await import('./js/api/index.js');
+          const res = await getPokemonList(this.compareFilter);
+
+          if (res && res.code === 200) {
+            const list = res.data.records || res.data;
+            // 过滤掉当前宠物自己
+            this.compareList = list.filter(p => p.id != this.pet?.id);
+          }
+        } catch (err) {
+          console.error("加载对比列表失败:", err);
+        }
+      },
+
+      goCompare() {
+        if (!this.selectedCompareId || !this.pet) return;
+        window.location.href = `./compare.html?id1=${this.pet.id}&id2=${this.selectedCompareId}`;
       }
     },
     mounted() {
