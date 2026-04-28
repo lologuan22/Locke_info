@@ -1,12 +1,17 @@
 body {
   font-family: "Microsoft YaHei", sans-serif;
   background: #f0f2f5;
-  padding: 20px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .container {
+  margin: 80px auto 20px;
   max-width: 1000px;
-  margin: 0 auto;
   background: #fff;
   padding: 30px;
   border-radius: 12px;
@@ -25,6 +30,7 @@ body {
   flex: 1;
   min-width: 350px;
   height: 400px;
+  min-height: 400px;
 }
 
 .skill-section {
@@ -82,12 +88,6 @@ th {
 .pet-photo {
   flex: 0 0 200px; /* 固定头像宽度 */
   text-align: center;
-}
-
-.pet-img {
-  width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 属性条样式 */

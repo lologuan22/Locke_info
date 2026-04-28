@@ -14,67 +14,139 @@
   <link rel="stylesheet" href="./css/detail.css" />
 </head>
 
+
+
 <body>
-  <div id="app" class="container" v-cloak>
+  <div id="app" v-cloak>
     <common-header></common-header>
 
-    <div v-if="loading" class="loading">加载中...</div>
+    <div class="container">
+      <div v-if="loading" class="loading">加载中...</div>
 
-    <template v-else-if="pet">
-    </template>
+      <template v-else-if="pet">
+        <div class="info-card">
+          <h2>{{ pet.name }} (ID: {{ pet.id }})</h2>
+          <div class="pet-display-container">
+            <div class="pet-photo">
+              <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name" class="pet-img">
+            </div>
+            <div class="stat-bars">
+              <div v-for="(label, index) in ['精力', '攻击', '防御', '魔攻', '魔抗', '速度']" :key="index" class="stat-item">
+                <span class="stat-label">{{ label }}</span>
+                <div class="bar-container">
+                  <div class="bar-fill" :style="{ width: (pet.radarData[index] / 2) + '%' }"></div>
+                </div>
+                <span class="stat-value">{{ pet.radarData[index] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    <div v-else class="loading">未找到该宠物信息</div>
+        <div class="chart-card" id="radarChart" ref="radarChartRef"></div>
+
+        <div class="skill-section">
+          <h3>技能列表</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>技能名</th>
+                <th>属性</th>
+                <th>威力</th>
+                <th>PP</th>
+                <th>描述</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="skill in pet.skills" :key="skill.id">
+                <td>{{ skill.name }}</td>
+                <td>{{ skill.type }}</td>
+                <td>{{ skill.power }}</td>
+                <td>{{ skill.pp }}</td>
+                <td>{{ skill.effect }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <div v-else class="loading">未找到该宠物信息</div>
+    </div>
   </div>
 
-  <script type="module">
-    import { getPokemonDetail } from './js/api/index.js';
-    import CommonHeader from './js/components/header/HeaderContainer.js';
-    const app = Vue.createApp({
-      data() {
-        return {
-          pet: null,
-          loading: true,
-          myChart: null
-        };
+</body>
+
+<script type="module">
+  import { getPokemonDetail } from './js/api/index.js';
+  import CommonHeader from './js/components/header/HeaderContainer.js';
+
+  let myChartInstance = null;
+
+  const app = Vue.createApp({
+    data() {
+      return {
+        pet: null,
+        loading: true
+      };
+    },
+    mounted() {
+      this.fetchData();
+      window.addEventListener('resize', () => {
+        myChartInstance && myChartInstance.resize();
+      });
+    },
+    methods: {
+      getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
       },
-      mounted() {
-        this.fetchData();
-        window.addEventListener('resize', () => {
-          this.myChart && this.myChart.resize();
-        });
-      },
-      methods: {
-        getQueryParam(name) {
-          const urlParams = new URLSearchParams(window.location.search);
-          return urlParams.get(name);
-        },
-        async fetchData() {
-          const id = this.getQueryParam('id');
-          try {
-            const res = await getPokemonDetail(id);
-            if (res.code === 200) {
-              this.pet = res.data;
-              // 使用 nextTick 确保 DOM 更新后初始化图表
+
+      async fetchData() {
+        const id = this.getQueryParam('id');
+        try {
+          const res = await getPokemonDetail(id);
+          console.log("1. API 返回原始数据:", res);
+
+          if (res.code === 200 && res.data) {
+            this.pet = res.data;
+
+            if (this.pet.radarData) {
               Vue.nextTick(() => {
-                this.initChart(this.pet.radarData);
+                Vue.nextTick(() => {
+                  this.initChart();
+                });
               });
             }
-          } catch (err) {
-            console.error("数据加载失败", err);
-          } finally {
-            this.loading = false;
           }
-        },
-        initChart(radarData) {
-          const chartDom = document.getElementById('radarChart');
-          if (!chartDom || !radarData) return;
+        } catch (err) {
+          console.error("API 请求异常:", err);
+        } finally {
+          this.loading = false;
+        }
+      },
 
-          const formattedData = Array.isArray(radarData) ? radarData : [];
-          this.myChart = echarts.init(chartDom);
+      initChart() {
+        const chartDom = this.$refs.radarChartRef; // 建议在 HTML 加入 ref="radarChartRef"
+
+        if (!chartDom) {
+          console.error("错误：未找到 #radarChart 元素。请检查 v-if 是否正确切换。");
+          return;
+        }
+        const { offsetWidth, offsetHeight } = chartDom;
+        if (offsetHeight === 0) {
+          console.warn("警告：容器高度为 0，图表将无法显示。请检查 CSS。");
+        }
+        const rawData = JSON.parse(JSON.stringify(this.pet.radarData));
+
+        if (myChartInstance) {
+          myChartInstance.dispose();
+        }
+
+        try {
+          myChartInstance = echarts.init(chartDom);
 
           const option = {
-            title: { text: '能力分布', left: 'center' },
-            tooltip: {},
+            title: { text: '种族值雷达图', left: 'center' },
+            tooltip: { trigger: 'item' },
             radar: {
               indicator: [
                 { name: '精力', max: 200 },
@@ -84,27 +156,32 @@
                 { name: '魔抗', max: 200 },
                 { name: '速度', max: 200 }
               ],
-              shape: 'circle'
+              radius: '60%' // 缩小半径防止溢出
             },
             series: [{
               type: 'radar',
-              data: [{
-                value: formattedData,
-                name: '种族值',
-                areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
-                lineStyle: { color: '#1890ff', width: 2 }
-              }]
+              data: [
+                {
+                  value: rawData,
+                  name: '当前宠物',
+                  areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
+                  lineStyle: { color: '#1890ff' }
+                }
+              ]
             }]
           };
-          this.myChart.setOption(option);
+
+          myChartInstance.setOption(option);
+          console.log("4. ECharts setOption 执行完毕");
+        } catch (e) {
+          console.error("5. ECharts 初始化异常:", e);
         }
       }
-    });
+    }
+  });
 
-    // 3. 注册并挂载（顺序很重要：先注册组件，再挂载应用）
-    app.component('common-header', CommonHeader);
-    app.mount('#app');
-  </script>
-</body>
+  app.component('common-header', CommonHeader);
+  app.mount('#app');
+</script>
 
 </html>
