@@ -73,20 +73,6 @@
   opacity: 0.8;
 }
 
-/* --- 统一按钮基础：去掉多余修饰 --- */
-.btn-search,
-.btn-clear {
-  padding: 8px 20px;
-  border-radius: 8px; /* 匹配输入框的圆角，更严谨 */
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
 
 /* --- 查询按钮：清爽的实色填充 --- */
 .btn-search {
@@ -116,7 +102,7 @@
 }
 
 /* --- 点击反馈：轻微按压感 --- */
-.btn-search:active, 
+.btn-search:active,
 .btn-clear:active {
   transform: scale(0.97);
   box-shadow: none;
@@ -155,9 +141,10 @@
   transform: translateY(-2px);
 }
 
-
 /* --- 按钮激活态 (点击波纹感) --- */
-.btn-search:active, .btn-clear:active, .btn-add:active {
+.btn-search:active,
+.btn-clear:active,
+.btn-add:active {
   transform: scale(0.92);
 }
 
@@ -170,9 +157,8 @@
   opacity: 0.7;
 }
 
-
 /* 已收藏/禁用状态 */
-.btn-add.is-owned, 
+.btn-add.is-owned,
 .btn-add:disabled {
   background-color: #f5f5f5 !important;
   color: #bbb !important;
@@ -185,11 +171,11 @@
 /* 右侧图标入口 */
 
 .map-link {
-  flex: 0 0 200px;
+  flex: 0 0 250px;
 }
 
 #map_in_bt {
-  width: 200px;
+  width: 250px;
   height: auto;
   display: block;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -209,25 +195,48 @@
   min-height: 180px;
 }
 
-/* 美化滚动条 (仅限 Webkit 浏览器) */
-.scroll-container::-webkit-scrollbar {
-  height: 8px;
+.scroll-container {
+  overflow-x: auto;
+  padding-bottom: 25px;
+
+  /* --- 1. Firefox 套装 (简单但受限) --- */
+  scrollbar-width: thin;
+  scrollbar-color: #d9f29a transparent;
+
+  /* --- 2. Edge/Chrome 套装 (精细且丝滑) --- */
 }
 
-.scroll-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
+/* 针对 Firefox 的交互：鼠标移入变粗 */
+@supports not selector(::-webkit-scrollbar) {
+  .scroll-container:hover {
+    scrollbar-width: auto;
+  }
+}
+
+/* 针对 Edge/Chrome 的交互：实现你想要的“平时细、拖拽粗” */
+.scroll-container::-webkit-scrollbar {
+  height: 6px; /* 平时宽度 */
+  transition: all 0.2s;
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-  background: #d9f29a;
+  background-color: #d9f29a;
   border-radius: 10px;
+  /* 魔法技巧：用透明边框把滑块挤细，实现“平时细” */
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #c5e07d;
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
 }
 
+/* 悬停或点击滑块时：去掉边框，颜色变深，视觉上就变粗了 */
+.scroll-container::-webkit-scrollbar-thumb:hover,
+.scroll-container::-webkit-scrollbar-thumb:active {
+  border: 0px;
+  background-color: #c5e07d;
+}
 
 /* 精灵卡片样式 */
 .pet-card {
@@ -257,7 +266,7 @@
 
 /* 修改原有 p 标签样式，取消 margin */
 .pet-card p {
-  margin: 0; 
+  margin: 0;
   font-size: 14px;
   font-weight: bold;
   color: #333;
@@ -276,7 +285,6 @@
   white-space: nowrap;
 }
 
-
 /* 响应式调整 */
 @media (max-width: 768px) {
   .map-header {
@@ -292,18 +300,21 @@
 }
 
 /* 针对卡片内部按钮的特殊布局 */
-.pet-card .btn-add, 
+.pet-card .btn-add,
 .pet-card .btn-clear {
   margin-top: 12px;
   width: 100%;
   padding: 8px 0;
   font-size: 13px;
-  
+
   /* 初始隐藏动画 */
   opacity: 0;
   visibility: hidden;
   transform: translateY(8px);
-  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    background 0.2s;
 }
 
 /* 悬停显示 */
@@ -322,14 +333,6 @@
 .list-leave-to {
   opacity: 0;
   transform: scale(0.5) translateY(30px);
-}
-
-/* 已收藏按钮样式 */
-.btn-add.is-owned {
-  background-color: #f1f1f1;
-  color: #999;
-  cursor: not-allowed;
-  border: 1px solid #ddd;
 }
 
 
@@ -351,7 +354,14 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
