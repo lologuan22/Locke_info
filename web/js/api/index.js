@@ -207,3 +207,14 @@ export const removeFromBackpack = (pokemonId) => {
 export const checkIfOwned = (pokemonId) => {
   return request({ url: `/api/backpack/check/${pokemonId}`, method: 'get' });
 };
+
+/**
+ * 退出登录
+ * @returns {Promise<Result<string>>}
+ */
+export const logout = () => {
+  return request({ 
+    url: '/api/user/logout', 
+    method: 'post' 
+  });
+};

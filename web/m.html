@@ -173,10 +173,14 @@
   <!-- ====================== 核心拆分 ====================== -->
   <!-- 1. 加载公共头部 -->
   <script>
+    // m.html 中的修改
     fetch("./header.html")
       .then(res => res.text())
       .then(html => {
         document.getElementById("header-placeholder").innerHTML = html;
+
+        // --- 关键修改：手动触发事件，通知 top.js 头部已加载完毕 ---
+        window.dispatchEvent(new Event("headerLoaded"));
       });
   </script>
 
@@ -187,4 +191,5 @@
   <script type="module" src="./color.js"></script>
 
 </body>
+
 </html>

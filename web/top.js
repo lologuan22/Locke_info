@@ -208,3 +208,56 @@ function initUserPanel() {
     if (el) el.src = finalUrl;
   });
 }
+
+
+// top.js 内部
+window.addEventListener("headerLoaded", () => {
+  keepLoginStatus();
+  initUserPanel();
+
+  // 1. 退出登录
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      console.log("退出登录被点击");
+      try {
+        // 调用你 api 目录下的 logout
+        await api.logout(); 
+      } catch (e) {
+        console.error("退出接口调用失败", e);
+      }
+      AuthService.clearSession();
+      location.reload();
+    };
+  }
+
+  // 2. 更换头像
+  const changeAvatarBtn = document.getElementById("changeAvatarBtn");
+  const avatarInput = document.getElementById("avatarInput");
+  if (changeAvatarBtn && avatarInput) {
+    changeAvatarBtn.onclick = () => avatarInput.click();
+
+    avatarInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        // 假设你的 api 对象里有 uploadAvatar 方法
+        const res = await api.uploadAvatar(formData); 
+        if (res.code === 200) {
+            // 更新本地存储并刷新 UI
+            const user = JSON.parse(localStorage.getItem("userInfo"));
+            user.avatarUrl = res.data; // 假设返回的是路径
+            localStorage.setItem("userInfo", JSON.stringify(user));
+            initUserPanel();
+            alert("头像更新成功！");
+        }
+      } catch (err) {
+        console.error("上传失败", err);
+      }
+    };
+  }
+});
