@@ -1,0 +1,10 @@
+<div id="main-app">
+    <common-header></common-header>
+</div>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script type="module">
+    import CommonHeader from './header-component.js';
+    const app = Vue.createApp({});
+    app.component('common-header', CommonHeader);
+    app.mount('#main-app');
+</script>

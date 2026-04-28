@@ -1,0 +1,251 @@
+a {
+    text-decoration: none;
+    color: #111;
+}
+
+.topp {
+    height: 70px;
+    width: 100%;
+    background-color: #69c2e2;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    z-index: 999;
+    /* 垂直居中 */
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 20px;
+    margin-left: 20px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+}
+
+.log {
+    font-size: 12px;
+    margin-left: auto;
+    /* 自动靠右 */
+    margin-right: 20px;
+}
+
+.holdplace {
+    height: 95px;
+}
+
+.log {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* 登录表单样式 */
+.login-form {
+    position: relative;
+    top: 8%;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    flex: 1;
+}
+
+.login-form h2 {
+    text-align: center;
+    margin: 0 0 10px 0;
+    padding: 20px;
+}
+
+.input-group {
+    position: relative;
+    /* 给 label 做定位基准 */
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    position: absolute;
+    /* 脱离文档流，不会挤输入框 */
+    top: -18px;
+    /* 往上移动，你可以微调这个值 */
+    left: 0;
+    font-weight: bold;
+    margin-bottom: 0;
+    /* 原来的 margin 去掉，避免干扰 */
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 10px;
+    background: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+#msg {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.user-avatar {
+    width: 44px;
+    height: 44px;
+    border: #7d5603 2px solid;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    margin-right: 2%;
+}
+
+.toggle-text {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #1890ff;
+}
+
+
+
+.topp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ======================
+    登录弹窗样式（完整美化版）
+    ====================== */
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #eafaff;
+    width: 340px;
+    height: 400px;
+    padding: 30px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 0 20px rgba(1, 1, 1, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.close-btn {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* 头像弹出面板 */
+.avatar-popup {
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    width: 240px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    padding: 15px;
+    z-index: 9999;
+    display: none;
+}
+
+/* 修改昵称输入框 + 按钮 */
+.nickname-edit-wrap {
+    margin: 8px 0;
+    display: flex;
+    gap: 6px;
+}
+
+.nickname-edit-wrap input {
+    flex: 1;
+    width: 80%;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.btn-edit-nick {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    background: #1890ff;
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.avatar-popup.show {
+    display: block;
+}
+
+.avatar-popup .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.avatar-popup .avatar-big {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-popup .username {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.avatar-popup .btn {
+    width: 100%;
+    padding: 8px;
+    margin: 4px 0;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-change {
+    background: #e6f7ff;
+    color: #1890ff;
+}
+
+.btn-logout {
+    background: #fff2f0;
+    color: #f5222d;
+}
+
+#avatarInput {
+    display: none;
+}

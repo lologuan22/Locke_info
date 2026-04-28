@@ -1,0 +1,70 @@
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<div id="header-app" class="hud" v-cloak>
+    <div class="modal" id="loginModal" v-if="showModal" style="display: flex;">
+        <div class="modal-content">
+            <span class="close-btn" @click="showModal = false">&times;</span>
+
+            <form @submit.prevent="handleLogin" class="login-form">
+                <h2>{{ isRegister ? '洛克王国 WIKI 注册' : '洛克王国 WIKI 登录' }}</h2>
+                
+                <div class="input-group">
+                    <label>账号</label>
+                    <input type="text" v-model="formData.username" placeholder="请输入用户名" required>
+                </div>
+
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" v-model="formData.password" placeholder="请输入密码" required>
+                </div>
+
+                <div class="input-group" v-if="isRegister">
+                    <label>确认密码</label>
+                    <input type="password" v-model="formData.confirmPwd" placeholder="请再次输入密码" :required="isRegister">
+                </div>
+
+                <button type="submit" class="btn-login" :disabled="loading">
+                    {{ loading ? (isRegister ? '注册中...' : '登录中...') : (isRegister ? '注 册' : '登 录') }}
+                </button>
+
+                <div id="msg" :style="{ color: msgColor }">{{ message }}</div>
+                
+                <div class="toggle-text" @click="toggleMode">
+                    {{ isRegister ? '已有账号？返回登录' : '没有账号？注册新账号' }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="top">
+        <div class="topp">
+            <a href="./m.html">
+                <span class="logo"><img src="./img/imglogo.png" width="60%"></span>
+            </a>
+
+            <a v-if="!isLoggedIn" class="log" @click="showModal = true">登录/注册</a>
+
+            <img v-if="isLoggedIn" 
+                 :src="fullAvatarUrl" 
+                 class="user-avatar" 
+                 @click="showAvatarPopup = !showAvatarPopup">
+
+            <div class="avatar-popup" :class="{ 'show': showAvatarPopup }">
+                <div class="user-info">
+                    <img class="avatar-big" :src="fullAvatarUrl">
+                    <div class="username">{{ userInfo.nickname || userInfo.username || '用户' }}</div>
+                </div>
+
+                <div class="nickname-edit-wrap">
+                    <input type="text" v-model="newNickname" placeholder="输入新昵称">
+                    <button class="btn-edit-nick" @click="updateNickname">保存昵称</button>
+                </div>
+
+                <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" style="display: none;">
+                <button class="btn btn-change" @click="$refs.fileInput.click()">更换头像</button>
+                <button class="btn btn-logout" @click="handleLogout">退出登录</button>
+            </div>
+        </div>
+        <div class="holdplace"></div>
+    </div>
+</div>
