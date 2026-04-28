@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>洛克王国 - 全精灵图鉴</title>
+  <link rel="stylesheet" href="./common.css" />
+  <link rel="stylesheet" href="./card.css">
+  <style>
+    /* 强制全屏重置 */
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100vh !important; overflow: hidden !important; }
+
+    /* 外层容器：缩小顶部距离 */
+    .main { 
+        display: flex !important; 
+        flex-direction: column !important; 
+        align-items: center !important; 
+        width: 100% !important; 
+        height: 100vh !important;
+        padding-top: 2vh !important;    /* 顶部距离：缩减至 2vh */
+        padding-bottom: 2vh !important; /* 底部距离：保持较小间距 */
+        box-sizing: border-box !important;
+    }
+
+    /* 中心盒子 */
+    .map { 
+        width: 95% !important;          /* 盒子宽度：屏幕宽度的 95% */
+        max-width: 1400px !important; 
+        height: 96vh !important;        /* 盒子高度自动撑满 */
+        padding: 20px !important; 
+        background-color: antiquewhite !important; 
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3) !important; 
+        border-radius: 15px !important; 
+        box-sizing: border-box !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .search-bar { display: flex !important; gap: 10px !important; margin: 15px 0 !important; flex-wrap: wrap !important; align-items: center !important; justify-content: center !important; }
+
+    /* 竖向滚动容器 */
+    .scroll-container { 
+        display: grid !important; 
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important; 
+        gap: 20px !important; 
+        overflow-y: auto !important; 
+        flex-grow: 1 !important;        /* 自动填满 map 剩余空间 */
+        padding: 10px !important;
+    }
+
+    .btn-back { cursor: pointer !important; padding: 5px 10px !important; }
+  </style>
+</head>
+
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="main">
+    <div class="map">
+      <div style="margin-bottom: 10px;">
+        <button class="btn-back" onclick="window.location.href='m.html'">← 返回主菜单</button>
+      </div>
+      
+      <h2 style="text-align: center; margin-top: 0; margin-bottom: 10px;">全部精灵图鉴</h2>
+
+      <div class="search-bar">
+        <input type="text" id="nameSearch" placeholder="搜索精灵名称" />
+        <select id="typeSearch">
+          <option value="">全部属性</option>
+          <option value="水">水</option>
+          <option value="火">火</option>
+          <option value="草">草</option>
+          <option value="光">光</option>
+          <option value="翼">翼</option>
+          <option value="电">电</option>
+          <option value="冰">冰</option>
+          <option value="武">武</option>
+          <option value="土">土</option>
+          <option value="虫">虫</option>
+          <option value="幽灵">幽灵</option>
+          <option value="恶魔">恶魔</option>
+          <option value="龙">龙</option>
+          <option value="毒">毒</option>
+        </select>
+        <button onclick="loadList()">查询</button>
+      </div>
+
+      <div class="scroll-container" id="display-list">
+        <p>正在读取数据...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    fetch("./header.html").then(res => res.text()).then(html => {
+      document.getElementById("header-placeholder").innerHTML = html;
+    });
+  </script>
+  
+  <script type="module" src="./color.js"></script>
+  <script type="module" src="./top.js"></script>
+</body>
+</html>
