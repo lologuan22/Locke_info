@@ -100,7 +100,7 @@
 </head>
 
 <body>
-  <!-- 公共头部 -->
+  <!-- 公共头部（只加载头部，不执行多余JS） -->
   <div id="header-placeholder"></div>
 
   <div class="main">
@@ -170,7 +170,8 @@
     </div>
   </div>
 
-  <!-- 加载头部 -->
+  <!-- ====================== 核心拆分 ====================== -->
+  <!-- 1. 加载公共头部 -->
   <script>
     fetch("./header.html")
       .then(res => res.text())
@@ -179,8 +180,10 @@
       });
   </script>
 
-  <!-- 加载顺序：先top 再color -->
+  <!-- 2. 只加载用户登录（top.js 只做登录头像，不加载列表） -->
   <script type="module" src="./top.js"></script>
+
+  <!-- 3. 单独加载精灵列表逻辑（所有列表、收藏、卡片都在这里） -->
   <script type="module" src="./color.js"></script>
 
 </body>

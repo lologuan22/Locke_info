@@ -25,7 +25,7 @@ public class User {
     @Schema(description = "昵称", example = "洛克")
     private String nickname;
 
-    @Schema(description = "头像URL", example = "/api/avatars/default.png")
+    @Schema(description = "头像URL", example = "/images/avatar/default.png")
     private String avatarUrl;
 
     @Schema(description = "账号创建时间")
