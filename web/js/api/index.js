@@ -4,7 +4,7 @@
  * @module api/index
  */
 
-import request from './request.js';
+import request from '../utils/request.js';
 
 // ==========================================
 // 实体类定义 (Entity Definitions)
