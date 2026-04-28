@@ -1,5 +1,5 @@
 import * as api from './js/api/index.js';
-import { login } from './js/api/index.js';
+window.api = api;
 
 window.addEventListener('pageshow', function () {
   setTimeout(() => {
