@@ -9,7 +9,7 @@ window.addEventListener('pageshow', function () {
   }, 10);
 });
 
-const BASE_URL = 'http://172.17.79.7:8080';
+const BASE_URL = "http://172.17.79.7:8080";
 
 // ======================
 // 🔥 100%匹配后端：avatar字段 + 正确拼接路径
