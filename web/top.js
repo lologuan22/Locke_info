@@ -9,6 +9,7 @@ window.addEventListener('pageshow', function () {
     }, 10);
 });
 
+// ✅ 修复：还原你正确的后端IP（核心！）
 const BASE_URL = 'http://172.17.79.7:8080';
 
 // ======================
@@ -23,9 +24,10 @@ function keepLoginStatus() {
             if (logDom) logDom.style.display = 'none';
             const avatar = document.getElementById('userAvatar');
             if (avatar) {
-                if (user.avatar) {
-                    let avatarUrl = user.avatar.replace("/api", "");
-                    avatar.src = BASE_URL + avatarUrl;
+                // ✅ 修复：avatar → avatarUrl
+                if (user.avatarUrl) {
+                    avatar.src = BASE_URL + user.avatarUrl;
+                    avatar.onerror = () => avatar.src = './img/default-avatar.png';
                 } else {
                     avatar.src = './img/default-avatar.png';
                 }
@@ -66,7 +68,7 @@ window.handleLogin = async function (event) {
     password = password.value;
     if(confirmPwd) confirmPwd = confirmPwd.value;
 
-    if (password.length < 6 || /[\u4e00-\u9fa5]/.test(password)) {
+    if (password.length < 6 || /[\u4e00-\u9fa5]/i.test(password)) {
         msgDiv.style.color = "#E74C3C";
         msgDiv.innerText = "密码至少6位，且不能包含中文！";
         setTimeout(() => msgDiv.innerText = "", 3000);
@@ -113,16 +115,25 @@ window.handleLogin = async function (event) {
             msgDiv.style.color = "#27AE60";
             msgDiv.innerText = "✅ 登录成功！";
             localStorage.setItem('token', res.data.token);
-            localStorage.setItem('userInfo', JSON.stringify(res.data.userInfo));
 
+            console.log("【登录】获取最新用户信息...");
+
+            // ✅ 强制拉取后端最新用户数据（头像一定在这里）
             const { getCurrentUserInfo } = await import('./js/api/index.js');
             const userRes = await getCurrentUserInfo();
-            localStorage.setItem('userInfo', JSON.stringify(userRes.data));
+            
+            if (userRes && userRes.code === 200 && userRes.data) {
+                console.log("【登录】后端返回最新用户信息：", userRes.data);
+                console.log("【登录】头像路径：", userRes.data.avatarUrl); // ✅ 修复
+                localStorage.setItem('userInfo', JSON.stringify(userRes.data));
+            } else {
+                console.error("【登录】获取用户信息失败！");
+            }
 
             keepLoginStatus();
             initUserPanel();
 
-            if (window.loadList && window.loadBackpack) {
+            if (window.loadList && window.loadList) {
                 await Promise.all([window.loadList(), window.loadBackpack()]);
             }
             setTimeout(closeModal, 1000);
@@ -175,66 +186,48 @@ function initUserPanel() {
         const popupAvatar = document.getElementById('popupAvatar');
         if (popupName) popupName.innerText = user.nickname || '用户';
 
-        const avatarUrl = user.avatar ? user.avatar.replace("/api", "") : '';
-        const fullUrl = avatarUrl ? BASE_URL + avatarUrl : './img/default-avatar.png';
-        if (popupAvatar) popupAvatar.src = fullUrl;
-        if (avatarImg) avatarImg.src = fullUrl;
+        // ✅ 修复：avatar → avatarUrl
+        const fullUrl = user.avatarUrl ? BASE_URL + user.avatarUrl : './img/default-avatar.png';
+        
+        if (popupAvatar) {
+            popupAvatar.src = fullUrl;
+            popupAvatar.onerror = () => popupAvatar.src = './img/default-avatar.png';
+        }
+        if (avatarImg) {
+            avatarImg.src = fullUrl;
+            avatarImg.onerror = () => avatarImg.src = './img/default-avatar.png';
+        }
     } catch (e) { }
 }
-
 window.toggleAvatarPopup = function () {
     const popup = document.getElementById('avatarPopup');
     if (popup) popup.classList.toggle('show');
 }
 
 // ======================
-// ✅ 最终修复：头像上传（401 解决 + 后端必收）
-// ======================
-async function uploadAvatarFix(file) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("请先登录！");
-        return null;
-    }
-
-    try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await fetch("http://172.17.79.7:8080/api/user/upload/avatar", {
-            method: "POST",
-            headers: {
-                "token": token
-            },
-            body: formData
-        });
-
-        console.log("【上传】状态码：", res.status);
-        if (!res.ok) return null;
-
-        const result = await res.json();
-        console.log("【上传】返回：", result);
-        return result.code === 200 ? result.data : null;
-    } catch (err) {
-        console.error("【上传】错误：", err);
-        return null;
-    }
-}
-
-// ======================
 // 更新资料
 // ======================
 async function updateUserProfile(data) {
+    console.log("【资料更新】开始执行，传入数据：", data);
     try {
+        const token = localStorage.getItem('token');
+        console.log("【资料更新】当前token：", token);
+        
         const res = await api.updateProfile(data);
+        console.log("【资料更新】后端完整返回：", res);
+
         if (res.code === 200) {
+            console.log("【资料更新】成功！");
             const user = JSON.parse(localStorage.getItem('userInfo'));
             const newUser = { ...user, ...data };
             localStorage.setItem('userInfo', JSON.stringify(newUser));
+            console.log("【资料更新】本地存储已更新，最新userInfo：", newUser);
             initUserPanel();
+        } else {
+            console.log("【资料更新】后端返回失败：", res.message);
         }
     } catch (e) {
-        console.error(e);
+        console.error("【资料更新】捕获异常：", e);
     }
 }
 
@@ -242,10 +235,50 @@ async function updateUserProfile(data) {
 // 更换头像
 // ======================
 async function handleChangeAvatar() {
+    console.log("=====================================");
+    console.log("【头像上传】触发更换头像");
+    
+    const token = localStorage.getItem("token");
     const input = document.getElementById('avatarInput');
-    if (!input || !input.files || !input.files[0]) return;
-    const url = await uploadAvatarFix(input.files[0]);
-    if (url) await updateUserProfile({ avatar: url });
+
+    if (!token) {
+        console.log("【头像上传】未登录，终止上传");
+        alert("请先登录！");
+        input.value = '';
+        return;
+    }
+    if (!input || !input.files || !input.files[0]) {
+        console.log("【头像上传】未选择文件，终止");
+        return;
+    }
+
+    const file = input.files[0];
+    console.log("【头像上传】选中文件：", file.name, "大小：", file.size, "类型：", file.type);
+
+    try {
+        console.log("【头像上传】开始调用上传接口 api.uploadAvatar");
+        const res = await api.uploadAvatar(file);
+        console.log("【头像上传】接口返回完整数据：", res);
+        console.log("【头像上传】后端返回的头像路径：", res?.data);
+
+        if (res?.code === 200) {
+            console.log("【头像上传】上传成功，准备更新用户资料");
+            // ✅ 修复：avatar → avatarUrl
+            await updateUserProfile({ avatarUrl: res.data });
+            console.log("【头像上传】头像已保存到后端 & 本地更新完成");
+            alert("头像修改成功！");
+        } else {
+            console.log("【头像上传】后端返回失败：", res?.message);
+            alert(res?.message || "头像上传失败");
+        }
+    } catch (err) {
+        console.error("【头像上传】请求报错：", err);
+        alert("头像上传异常，请重试");
+    } finally {
+        input.value = '';
+        console.log("【头像上传】文件输入框已清空");
+    }
+    console.log("=====================================");
 }
 
 // ======================
@@ -274,7 +307,21 @@ window.logout = async function () {
 // ======================
 // 页面加载
 // ======================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        try {
+            const { getCurrentUserInfo } = await import('./js/api/index.js');
+            const userRes = await getCurrentUserInfo();
+            if (userRes.code === 200 && userRes.data) {
+                localStorage.setItem('userInfo', JSON.stringify(userRes.data));
+                console.log("【页面初始化】已同步后端最新头像：", userRes.data.avatarUrl);
+            }
+        } catch (e) {
+            console.error("【初始化】拉取用户信息失败", e);
+        }
+    }
+
     keepLoginStatus();
     initUserPanel();
 
