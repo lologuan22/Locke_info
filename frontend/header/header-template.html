@@ -1,0 +1,71 @@
+<div class="hud">
+    <div class="modal" id="loginModal" v-if="state.showModal" style="display: flex;">
+        <div class="modal-content">
+            <span class="close-btn" @click="state.showModal = false">&times;</span>
+
+            <form id="loginForm" @submit.prevent="handleLoginSubmit" class="login-form">
+                <h2>{{ state.isRegister ? '洛克王国 WIKI 注册' : '洛克王国 WIKI 登录' }}</h2>
+
+                <div class="input-group">
+                    <label>账号</label>
+                    <input type="text" v-model="loginForm.username" placeholder="请输入用户名" required>
+                </div>
+
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" v-model="loginForm.password" placeholder="请输入密码" required>
+                </div>
+
+                <div class="input-group" v-show="state.isRegister">
+                    <label>确认密码</label>
+                    <input type="password" v-model="loginForm.confirmPwd" placeholder="请再次输入密码">
+                </div>
+
+                <button type="submit" class="btn-login" :disabled="state.loading">
+                    {{ state.loading ? (state.isRegister ? '注册中...' : '登录中...') : (state.isRegister ? '注 册' : '登 录') }}
+                </button>
+
+                <div id="msg" :style="{ color: state.msgType === 'success' ? '#27AE60' : '#E74C3C' }">
+                    {{ state.message }}
+                </div>
+
+                <div class="toggle-text" @click="toggleMode">
+                    {{ state.isRegister ? '已有账号？返回登录' : '没有账号？注册新账号' }}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="top">
+        <div class="topp">
+            <a href="./m.html">
+                <span class="logo">
+                    <img src="./img/imglogo.png" alt="" class="logo" width="60%">
+                </span>
+            </a>
+
+            <a v-if="!state.isLoggedIn" class="log" @click="state.showModal = true">登录/注册</a>
+
+            <img v-else :src="userAvatarUrl" alt="用户头像" class="user-avatar"
+                @click="state.showAvatarPopup = !state.showAvatarPopup">
+
+            <div class="avatar-popup" :class="{ 'show': state.showAvatarPopup }">
+                <div class="user-info">
+                    <img class="avatar-big" :src="userAvatarUrl">
+                    <div class="username">{{ state.userInfo.username || '用户' }}</div>
+                </div>
+
+                <div class="nickname-edit-wrap">
+                    <input type="text" v-model="state.newNickname" placeholder="输入新昵称">
+                    <button class="btn-edit-nick" @click="handleUpdateNickname">保存昵称</button>
+                </div>
+
+                <input type="file" id="avatarInput" ref="avatarInputRef" style="display:none" accept="image/*"
+                    @change="handleAvatarChange">
+                <button class="btn btn-change" @click="$refs.avatarInputRef.click()">更换头像</button>
+                <button class="btn btn-logout" @click="handleLogout">退出登录</button>
+            </div>
+        </div>
+        <div class="holdplace"></div>
+    </div>
+</div>

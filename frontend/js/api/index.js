@@ -4,7 +4,7 @@
  * @module api/index
  */
 
-import request from './request.js';
+import request from '../utils/request.js';
 
 // ==========================================
 // 实体类定义 (Entity Definitions)
@@ -206,4 +206,15 @@ export const removeFromBackpack = (pokemonId) => {
  */
 export const checkIfOwned = (pokemonId) => {
   return request({ url: `/api/backpack/check/${pokemonId}`, method: 'get' });
+};
+
+/**
+ * 退出登录
+ * @returns {Promise<Result<string>>}
+ */
+export const logout = () => {
+  return request({ 
+    url: '/api/user/logout', 
+    method: 'post' 
+  });
 };

@@ -1,224 +1,70 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
-<head>
-  <meta charset="UTF-8">
-  <title>后端逻辑验证 - 洛克王国 WIKI</title>
-  <style>
-    /* 极致简约布局：仅分块 */
-    body {
-      font-family: monospace;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
+<div id="header-app" class="hud" v-cloak>
+    <div class="modal" id="loginModal" v-if="showModal" style="display: flex;">
+        <div class="modal-content">
+            <span class="close-btn" @click="showModal = false">&times;</span>
 
-    header,
-    main,
-    footer {
-      border: 1px solid #000;
-      padding: 8px;
-    }
+            <form @submit.prevent="handleLogin" class="login-form">
+                <h2>{{ isRegister ? '洛克王国 WIKI 注册' : '洛克王国 WIKI 登录' }}</h2>
+                
+                <div class="input-group">
+                    <label>账号</label>
+                    <input type="text" v-model="formData.username" placeholder="请输入用户名" required>
+                </div>
 
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
+                <div class="input-group">
+                    <label>密码</label>
+                    <input type="password" v-model="formData.password" placeholder="请输入密码" required>
+                </div>
 
-    .search-group {
-      border: 1px solid #999;
-      padding: 5px;
-      margin-top: 5px;
-      display: inline-block;
-    }
+                <div class="input-group" v-if="isRegister">
+                    <label>确认密码</label>
+                    <input type="password" v-model="formData.confirmPwd" placeholder="请再次输入密码" :required="isRegister">
+                </div>
 
-    .list-area {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
+                <button type="submit" class="btn-login" :disabled="loading">
+                    {{ loading ? (isRegister ? '注册中...' : '登录中...') : (isRegister ? '注 册' : '登 录') }}
+                </button>
 
-    .card {
-      border: 1px solid #000;
-      width: 140px;
-      padding: 5px;
-      text-align: center;
-    }
-
-    .img-placeholder {
-      border: 1px dashed #ccc;
-      height: 80px;
-      line-height: 80px;
-      margin-bottom: 5px;
-    }
-
-    .btn {
-      cursor: pointer;
-      border: 1px solid #333;
-      background: #eee;
-      padding: 2px 5px;
-    }
-
-    .msg {
-      color: blue;
-    }
-
-    /* 用于显示 API 返回的状态消息 */
-  </style>
-</head>
-
-<body>
-
-  <header>
-    <div class="row">
-      <button class="btn" onclick="loadList()">图鉴大全 (刷新列表)</button>
-
-      <div id="auth-box">
-        <span id="user-info">状态: 检查中...</span>
-        <button class="btn" onclick="handleLogin()">登录测试</button>
-      </div>
-
-      <button class="btn" onclick="loadBackpack()">我的背包 (登录后点)</button>
-    </div>
-
-    <div class="search-group">
-      <input type="text" id="nameSearch" placeholder="搜索名称...">
-      <input type="text" id="typeSearch" placeholder="筛选属性...">
-      <button class="btn" onclick="loadList()">查询</button>
-    </div>
-  </header>
-
-  <main>
-    <strong>数据展示区: </strong> <span id="api-msg" class="msg">等待操作...</span>
-    <div class="list-area" id="display-list">
-      <p>暂无数据</p>
-    </div>
-  </main>
-
-  <footer>
-    <div id="page-info">当前页: 1 | 总计: -- </div>
-    <button class="btn" onclick="changePage(-1)">上一页</button>
-    <button class="btn" onclick="changePage(1)">下一页</button>
-  </footer>
-
-  <script type="module">
-    import * as api from '../js/api/index.js';
-
-    let currentPage = 1;
-
-    // 1. 验证获取用户信息
-    async function checkUser() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        document.getElementById('user-info').innerText = '未登录';
-        return;
-      }
-      try {
-        const res = await api.getCurrentUserInfo();
-        if (res.code === 200) {
-          document.getElementById('user-info').innerText = `用户: ${res.data.username}`;
-        }
-      } catch (e) {
-        document.getElementById('user-info').innerText = '登录已失效';
-      }
-    }
-
-    // 渲染列表到页面
-
-    const renderList = (list) => {
-      const container = document.getElementById('display-list');
-      // 定义后端基础路径
-      const BASE_URL = 'http://172.17.79.7:8080';
-
-      if (list.length === 0) {
-        container.innerHTML = '<p>暂无数据</p>';
-        return;
-      }
-
-      const html = list.map(item => {
-        // 拼接完整的图片地址
-        // 假设 item.imageUrl 返回的是 "/api/images/pet001.png"
-        const fullImgUrl = item.imageUrl ? `${BASE_URL}${item.imageUrl}` : '默认占位图地址';
-
-        return `
-      <div class="card">
-        <div class="img-placeholder">
-          <img src="${fullImgUrl}" alt="${item.name}" style="width:100%; height:100%; object-fit:contain;">
+                <div id="msg" :style="{ color: msgColor }">{{ message }}</div>
+                
+                <div class="toggle-text" @click="toggleMode">
+                    {{ isRegister ? '已有账号？返回登录' : '没有账号？注册新账号' }}
+                </div>
+            </form>
         </div>
-        <div><strong>${item.name}</strong></div>
-        <div>属性: ${item.type1}</div>
-      <div style="margin-top:5px;">
-        <button class="btn" onclick="showDetail(${item.id})">详情</button>
-        <button class="btn" onclick="checkOwned(${item.id})">持有情况</button>
-      </div>
-      </div>
-    `;
-      }).join('');
+    </div>
 
-      container.innerHTML = html;
-    };
+    <div class="top">
+        <div class="topp">
+            <a href="./m.html">
+                <span class="logo"><img src="./img/imglogo.png" width="60%"></span>
+            </a>
 
-    // 记得要把函数挂载到 window，或者确保它在 loadList 作用域内可见
-    window.renderList = renderList;
+            <a v-if="!isLoggedIn" class="log" @click="showModal = true">登录/注册</a>
 
-    // 2. 列表加载
-    const loadList = async () => {
-      // 获取值并去掉首尾空格
-      const nameVal = document.getElementById('nameSearch').value.trim();
-      const typeVal = document.getElementById('typeSearch').value.trim();
+            <img v-if="isLoggedIn" 
+                 :src="fullAvatarUrl" 
+                 class="user-avatar" 
+                 @click="showAvatarPopup = !showAvatarPopup">
 
-      document.getElementById('api-msg').innerText = '正在请求列表...';
+            <div class="avatar-popup" :class="{ 'show': showAvatarPopup }">
+                <div class="user-info">
+                    <img class="avatar-big" :src="fullAvatarUrl">
+                    <div class="username">{{ userInfo.nickname || userInfo.username || '用户' }}</div>
+                </div>
 
-      // 构造参数对象：只有当有值时才传入
-      const params = {
-        current: currentPage,
-        size: 10,
-        // 如果是空字符串，则设为 undefined，axios 会自动过滤掉该键值对
-        name: nameVal || undefined,
-        type: typeVal || undefined
-      };
-      try {
-        const res = await api.getPokemonList(params);
-        // 适配后端的 Page 对象
-        renderList(res.data.records || []);
-        document.getElementById('page-info').innerText = `当前页: ${res.data.current} | 总计: ${res.data.total}`;
-        document.getElementById('api-msg').innerText = '获取列表成功';
-      } catch (e) {
-        document.getElementById('api-msg').innerText = '请求失败，请检查控制台';
-      }
-    };
+                <div class="nickname-edit-wrap">
+                    <input type="text" v-model="newNickname" placeholder="输入新昵称">
+                    <button class="btn-edit-nick" @click="updateNickname">保存昵称</button>
+                </div>
 
-    // 3. 分页处理
-    const changePage = (delta) => {
-      currentPage += delta;
-      if (currentPage < 1) currentPage = 1;
-      loadList();
-    };
-
-    // 4. 模拟登录 (测试用)
-    const handleLogin = () => {
-      // 这里通常是跳转到 login.html，或者弹窗
-      window.location.href = '../login/login.html';
-    };
-
-    // --- 将函数挂载到 window，确保 HTML onclick 能触发 ---
-    window.loadList = loadList;
-    window.changePage = changePage;
-    window.handleLogin = handleLogin;
-    window.checkOwned = (id) => alert('查询 ID 为 ' + id + ' 的宠物是否在背包');
-    // 修改查看详情的跳转逻辑
-    window.showDetail = (id) => {
-      // 使用 URLSearchParams 风格传递 id 参数
-      window.location.href = `../details/details.html?id=${id}`;
-    };
-    // 初始化
-    checkUser();
-    loadList();
-  </script>
-</body>
-
-</html>
+                <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" style="display: none;">
+                <button class="btn btn-change" @click="$refs.fileInput.click()">更换头像</button>
+                <button class="btn btn-logout" @click="handleLogout">退出登录</button>
+            </div>
+        </div>
+        <div class="holdplace"></div>
+    </div>
+</div>
