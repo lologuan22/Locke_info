@@ -4,12 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>洛克王国 - 全精灵图鉴</title>
+  <title>洛克王国 - 我的收藏</title>
   <link rel="stylesheet" href="./common.css" />
   <link rel="stylesheet" href="./card.css">
   <style>
     /* 强制全屏重置 */
-    body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100vh !important; overflow: hidden !important; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; height: 100% !important; overflow: hidden !important; }
 
     /* 外层容器：使用百分比边距，极度贴边 */
     .main { 
@@ -22,7 +22,7 @@
         box-sizing: border-box !important;
     }
 
-    /* 中心盒子：宽度 98% (左右各 1%)，高度 98% */
+    /* 中心盒子：宽度 98%，即左右各留 1% */
     .map { 
         width: 98% !important;          
         height: 98% !important;        
@@ -44,11 +44,11 @@
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important; 
         gap: 15px !important; 
         overflow-y: auto !important; 
-        flex-grow: 1 !important;        /* 自动填满剩余空间 */
+        flex-grow: 1 !important;        
         padding: 10px !important;
     }
 
-    /* 优化加载状态文字 */
+    /* 修复空状态文字样式 */
     .scroll-container p { 
         grid-column: 1 / -1 !important; 
         text-align: center !important; 
@@ -70,11 +70,11 @@
         <button class="btn-back" onclick="window.location.href='m.html'">← 返回主菜单</button>
       </div>
       
-      <h2 style="text-align: center; margin-top: 0; margin-bottom: 10px;">全部精灵图鉴</h2>
+      <h2 style="text-align: center; margin-top: 0; margin-bottom: 10px;">我的收藏</h2>
 
       <div class="search-bar">
-        <input type="text" id="nameSearch" placeholder="搜索精灵名称" />
-        <select id="typeSearch">
+        <input type="text" id="backpackNameSearch" placeholder="搜索收藏的精灵" />
+        <select id="backpackTypeSearch">
           <option value="">全部属性</option>
           <option value="水">水</option>
           <option value="火">火</option>
@@ -91,11 +91,11 @@
           <option value="龙">龙</option>
           <option value="毒">毒</option>
         </select>
-        <button onclick="loadList()">查询</button>
+        <button onclick="loadBackpack()">查询</button>
       </div>
 
-      <div class="scroll-container" id="display-list">
-        <p>正在读取数据...</p>
+      <div class="scroll-container" id="backpack-list">
+        <p>正在读取收藏数据...</p>
       </div>
     </div>
   </div>
@@ -108,5 +108,13 @@
   
   <script type="module" src="./color.js"></script>
   <script type="module" src="./top.js"></script>
+  
+  <script>
+    window.addEventListener('load', () => {
+        if (typeof loadBackpack === 'function') {
+            loadBackpack();
+        }
+    });
+  </script>
 </body>
 </html>
