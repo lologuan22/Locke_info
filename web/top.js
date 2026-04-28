@@ -79,25 +79,30 @@ const BASE_URL = "http://172.17.79.7:8080";
 // ======================
 // 保持登录状态
 // ======================
+// ======================
+// 保持登录状态
+// ======================
 function keepLoginStatus() {
   try {
     const user = JSON.parse(localStorage.getItem("userInfo"));
     const token = localStorage.getItem("token");
+
     if (user && token) {
       const logDom = document.querySelector(".log");
       if (logDom) logDom.style.display = "none";
+
       const avatar = document.getElementById("userAvatar");
       if (avatar) {
-        if (user.avatar) {
-          let avatarUrl = user.avatar.replace("/api", "");
-          avatar.src = BASE_URL + avatarUrl;
-        } else {
-          avatar.src = "./img/default-avatar.png";
-        }
+        // --- 修改这里：调用统一的路径处理函数 ---
+        avatar.src = getFullAvatarUrl(user.avatarUrl);
+
+        console.log("保持登录状态 - 头像 URL:", avatar.src);
         avatar.style.display = "block";
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error("保持登录状态失败", e);
+  }
 }
 
 // ======================
@@ -135,26 +140,6 @@ window.toggleMode = function () {
   }
 };
 
-// ======================
-// 头像面板
-// ======================
-function initUserPanel() {
-  try {
-    let user = JSON.parse(localStorage.getItem("userInfo")) || {};
-    const popupName = document.getElementById("popupName");
-    const avatarImg = document.getElementById("userAvatar");
-    const popupAvatar = document.getElementById("popupAvatar");
-    if (popupName) popupName.innerText = user.nickname || "用户";
-
-    const avatarUrl = user.avatar ? user.avatar.replace("/api", "") : "";
-    const fullUrl = avatarUrl
-      ? BASE_URL + avatarUrl
-      : "./img/default-avatar.png";
-    if (popupAvatar) popupAvatar.src = fullUrl;
-    if (avatarImg) avatarImg.src = fullUrl;
-  } catch (e) {}
-}
-
 window.toggleAvatarPopup = function () {
   const popup = document.getElementById("avatarPopup");
   if (popup) popup.classList.toggle("show");
@@ -174,20 +159,52 @@ window.logout = async function () {
 // ======================
 // 页面加载
 // ======================
-document.addEventListener("DOMContentLoaded", () => {
+// 将原来的 document.addEventListener("DOMContentLoaded", ...) 修改为：
+window.addEventListener("headerLoaded", () => {
   keepLoginStatus();
   initUserPanel();
 
-  // 安全绑定事件
-  const toggleText = document.getElementById("toggleText");
-  if (toggleText) toggleText.onclick = toggleMode;
-
+  // 绑定退出登录
   const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) logoutBtn.onclick = logout;
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      console.log("退出登录被点击");
+      try {
+        await api.logout();
+      } catch (e) {}
+      AuthService.clearSession();
+      location.reload();
+    };
+  }
 
+  // 绑定更换头像
   const changeAvatarBtn = document.getElementById("changeAvatarBtn");
   const avatarInput = document.getElementById("avatarInput");
   if (changeAvatarBtn && avatarInput) {
     changeAvatarBtn.onclick = () => avatarInput.click();
+
+    avatarInput.onchange = async (e) => {
+      // ... 保持你原来的上传逻辑 ...
+      console.log("文件选择触发");
+    };
   }
 });
+
+// 新增辅助函数
+function getFullAvatarUrl(path) {
+  if (!path) return "./img/default-avatar.png";
+  if (path.startsWith("http")) return path;
+  return `${BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+// 修改 initUserPanel
+function initUserPanel() {
+  const user = JSON.parse(localStorage.getItem("userInfo")) || {};
+  const finalUrl = getFullAvatarUrl(user.avatarUrl);
+
+  const elements = ["userAvatar", "popupAvatar"];
+  elements.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.src = finalUrl;
+  });
+}

@@ -16,12 +16,6 @@ export const AuthService = {
     localStorage.removeItem("userInfo");
   },
 
-  // 处理头像 URL 转换
-  formatAvatarUrl(avatarPath) {
-    if (!avatarPath) return "./img/default-avatar.png";
-    return this.BASE_URL + avatarPath.replace("/api", "");
-  },
-
   // 核心注册逻辑
   async registerUser(username, password) {
     const res = await api.register({ username, password, nickname: username });
