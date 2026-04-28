@@ -93,26 +93,60 @@ window.loadBackpack = async function () {
   }
 };
 
+<<<<<<< HEAD
 window.addToMyBag = async function (id, e) {
   e.stopPropagation();
   try {
     await api.addToBackpack(id);
+=======
+// 添加收藏（无任何提示，仅未登录弹窗）
+window.addToMyBag = async function (id, e) {
+    e.stopPropagation();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert("请先登录再添加收藏！");
+        if (window.openModal) {
+            window.openModal();
+        }
+        return;
+    }
+
+    try {
+        await api.addToBackpack(id);
+    } catch (err) {
+        console.error(err);
+    }
+
+>>>>>>> 0448bd7 (修复)
     await Promise.all([loadList(), loadBackpack()]);
   } catch (err) {
     alert("加入背包失败，请登录");
   }
 };
 
+<<<<<<< HEAD
 window.removeFromMyBag = async function (id, e) {
   e.stopPropagation();
   try {
     await api.removeFromBackpack(id);
+=======
+// 删除收藏（无提示）
+window.removeFromMyBag = async function (id, e) {
+    e.stopPropagation();
+    try {
+        await api.removeFromBackpack(id);
+    } catch (err) {
+        console.error(err);
+    }
+>>>>>>> 0448bd7 (修复)
     await Promise.all([loadList(), loadBackpack()]);
   } catch (err) {
     alert("移除失败");
   }
 };
 
+<<<<<<< HEAD
 window.clearBackpack = async function () {
   if (!confirm('确定清空所有收藏？')) return;
   try {
@@ -124,6 +158,21 @@ window.clearBackpack = async function () {
   } catch (err) {
     alert("清空失败");
   }
+=======
+// 清空收藏（仅保留确认框，无成功提示）
+window.clearBackpack = async function () {
+    if (!confirm('确定清空所有收藏？')) return;
+    try {
+        const res = await api.getUserBackpack({ current: 1, size: 100 });
+        const list = res.data?.records || [];
+        for (let item of list) {
+            await api.removeFromBackpack(item.id);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+    await Promise.all([loadList(), loadBackpack()]);
+>>>>>>> 0448bd7 (修复)
 };
 
 window.showDetail = (id) => location.href = `details.html?id=${id}`;
