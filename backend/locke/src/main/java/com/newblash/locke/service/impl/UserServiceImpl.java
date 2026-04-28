@@ -16,8 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.newblash.locke.utils.PasswordUtil;
 import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -34,8 +35,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BaseException("用户不存在或已被禁用");
         }
 
-        // 3. 校验密码 (注意：如果是生产环境，记得用 BCrypt 进行加密校验)
-        if (!user.getPassword().equals(password)) {
+        // 3. 校验密码：使用 BCrypt 进行密文比对
+        if (!PasswordUtil.matches(password, user.getPassword())) {
             throw new BaseException("用户名或密码错误");
         }
 
@@ -72,8 +73,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setNickname(registerDTO.getNickname());
         user.setEmail(registerDTO.getEmail());
 
-        // 3. 开发阶段：直接存入明文密码
-        user.setPassword(registerDTO.getPassword());
+        // 3. 将明文密码加密后再存入数据库
+        user.setPassword(PasswordUtil.encode(registerDTO.getPassword()));
 
         // 4. 设置默认值
         user.setStatus(User.STATUS_NORMAL);
