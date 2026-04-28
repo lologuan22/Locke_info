@@ -14,8 +14,6 @@
   <link rel="stylesheet" href="./css/detail.css" />
 </head>
 
-
-
 <body>
   <div id="app" v-cloak>
     <common-header></common-header>
@@ -34,7 +32,7 @@
               <div v-for="(label, index) in ['精力', '攻击', '防御', '魔攻', '魔抗', '速度']" :key="index" class="stat-item">
                 <span class="stat-label">{{ label }}</span>
                 <div class="bar-container">
-                  <div class="bar-fill" :style="{ width: (pet.radarData[index] / 2) + '%' }"></div>
+                  <div class="bar-fill" :style="{ '--target-width': (pet.radarData[index] / 2) + '%' }"></div>
                 </div>
                 <span class="stat-value">{{ pet.radarData[index] }}</span>
               </div>
@@ -44,6 +42,28 @@
 
         <div class="chart-card" id="radarChart" ref="radarChartRef"></div>
 
+        <div class="description-section">
+          <h3>宠物简介</h3>
+          <p class="pet-intro">{{ pet.description || '暂无该宠物的背景描述。' }}</p>
+        </div>
+
+        <div class="suggestion-card">
+          <h3>养成建议</h3>
+          <div class="suggestion-content">
+            <div class="suggestion-item">
+              <strong>推荐性格：</strong>
+              <span>{{ recommendedNature }}</span>
+            </div>
+            <div class="suggestion-item">
+              <strong>定位分析：</strong>
+              <span>{{ petRole }}</span>
+            </div>
+            <div class="suggestion-item">
+              <strong>培养说明：</strong>
+              <p>{{ dynamicAdvice }}</p>
+            </div>
+          </div>
+        </div>
         <div class="skill-section">
           <h3>技能列表</h3>
           <table>
@@ -75,11 +95,16 @@
 
 </body>
 
+
 <script type="module">
-  import { getPokemonDetail } from './js/api/index.js';
+  import { usePetData } from './js/hooks/usePetData.js';
+  import { usePetLogic } from './js/hooks/usePetLogic.js';
+  import { PetChartController } from './js/utils/petChartController.js';
   import CommonHeader from './js/components/header/HeaderContainer.js';
 
-  let myChartInstance = null;
+  const chartCtrl = new PetChartController();
+  const { fetchPetDetail } = usePetData();
+  const { getRecommendedNature, getPetRole, getDynamicAdvice } = usePetLogic();
 
   const app = Vue.createApp({
     data() {
@@ -88,95 +113,35 @@
         loading: true
       };
     },
-    mounted() {
-      this.fetchData();
-      window.addEventListener('resize', () => {
-        myChartInstance && myChartInstance.resize();
-      });
+    computed: {
+      recommendedNature() { return getRecommendedNature(this.pet?.radarData); },
+      petRole() { return getPetRole(this.pet?.radarData); },
+      dynamicAdvice() { return getDynamicAdvice(this.pet?.radarData); }
     },
     methods: {
-      getQueryParam(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
-      },
-
-      async fetchData() {
-        const id = this.getQueryParam('id');
+      async initPage() {
         try {
-          const res = await getPokemonDetail(id);
-          console.log("1. API 返回原始数据:", res);
+          this.pet = await fetchPetDetail();
+          this.loading = false;
 
-          if (res.code === 200 && res.data) {
-            this.pet = res.data;
-
-            if (this.pet.radarData) {
-              Vue.nextTick(() => {
-                Vue.nextTick(() => {
-                  this.initChart();
-                });
-              });
-            }
+          if (this.pet.radarData) {
+            this.$nextTick(() => {
+              chartCtrl.render(this.$refs.radarChartRef, this.pet.radarData);
+            });
           }
         } catch (err) {
-          console.error("API 请求异常:", err);
-        } finally {
+          console.error('页面初始化失败:', err);
           this.loading = false;
         }
-      },
-
-      initChart() {
-        const chartDom = this.$refs.radarChartRef; // 建议在 HTML 加入 ref="radarChartRef"
-
-        if (!chartDom) {
-          console.error("错误：未找到 #radarChart 元素。请检查 v-if 是否正确切换。");
-          return;
-        }
-        const { offsetWidth, offsetHeight } = chartDom;
-        if (offsetHeight === 0) {
-          console.warn("警告：容器高度为 0，图表将无法显示。请检查 CSS。");
-        }
-        const rawData = JSON.parse(JSON.stringify(this.pet.radarData));
-
-        if (myChartInstance) {
-          myChartInstance.dispose();
-        }
-
-        try {
-          myChartInstance = echarts.init(chartDom);
-
-          const option = {
-            title: { text: '种族值雷达图', left: 'center' },
-            tooltip: { trigger: 'item' },
-            radar: {
-              indicator: [
-                { name: '精力', max: 200 },
-                { name: '攻击', max: 200 },
-                { name: '防御', max: 200 },
-                { name: '魔攻', max: 200 },
-                { name: '魔抗', max: 200 },
-                { name: '速度', max: 200 }
-              ],
-              radius: '60%' // 缩小半径防止溢出
-            },
-            series: [{
-              type: 'radar',
-              data: [
-                {
-                  value: rawData,
-                  name: '当前宠物',
-                  areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
-                  lineStyle: { color: '#1890ff' }
-                }
-              ]
-            }]
-          };
-
-          myChartInstance.setOption(option);
-          console.log("4. ECharts setOption 执行完毕");
-        } catch (e) {
-          console.error("5. ECharts 初始化异常:", e);
-        }
       }
+    },
+    mounted() {
+      this.initPage();
+      this.handleResize = () => chartCtrl.resize();
+      window.addEventListener('resize', this.handleResize);
+    },
+    unmounted() {
+      window.removeEventListener('resize', this.handleResize);
     }
   });
 

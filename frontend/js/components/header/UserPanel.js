@@ -6,7 +6,7 @@ export default {
   props: ["userInfo", "avatarUrl"],
   emits: ["update"],
   template: `
-    <div class="user-area">
+    <div class="user-area" ref="panelRef">
         <img :src="avatarUrl" class="user-avatar" @click="showPopup = !showPopup">
         <div class="avatar-popup" :class="{ 'show': showPopup }">
             <div class="user-info">
@@ -23,9 +23,30 @@ export default {
         </div>
     </div>`,
   setup(props, { emit }) {
-    const { ref } = Vue;
+    const { ref, onMounted, onUnmounted } = Vue; // 引入生命周期钩子
     const showPopup = ref(false);
+    const panelRef = ref(null); // 定义根元素的引用
     const newNickname = ref("");
+
+    // 切换弹窗显示/隐藏
+    const togglePopup = () => {
+      showPopup.value = !showPopup.value;
+    };
+
+    const handleClickOutside = (event) => {
+      // 如果点击的目标不在 panelRef 包含的范围内，则关闭弹窗
+      if (panelRef.value && !panelRef.value.contains(event.target)) {
+        showPopup.value = false;
+      }
+    };
+
+    onMounted(() => {
+      document.addEventListener("click", handleClickOutside);
+    });
+
+    onUnmounted(() => {
+      document.removeEventListener("click", handleClickOutside);
+    });
 
     // 1. 更新头像逻辑
     const upload = async (e) => {
@@ -84,6 +105,6 @@ export default {
       window.location.reload();
     };
 
-    return { showPopup, newNickname, upload, updateNick, logout };
+    return { panelRef, showPopup, newNickname, upload, updateNick, logout };
   },
 };

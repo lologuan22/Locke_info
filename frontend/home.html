@@ -35,18 +35,20 @@
 
             <transition-group name="list" tag="div" class="scroll-container">
 
-
                 <div v-for="pet in allPets" :key="pet.id" class="pet-card">
                     <div @click="goToDetail(pet.id)">
                         <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
-                        <p>{{pet.name}}</p>
-                        <small>{{pet.type1}}</small>
+                        <div class="pet-info">
+                            <p>{{pet.name}}</p>
+                            <small>{{pet.type1}}</small>
+                        </div>
                     </div>
                     <button @click.stop="handleAddToBackpack(pet)" :disabled="pet.isAdding || pet.isOwned"
                         :class="['btn-add', { 'is-owned': pet.isOwned }]">
                         {{ pet.isAdding ? '处理中...' : (pet.isOwned ? '已收藏' : '加入背包') }}
                     </button>
                 </div>
+
             </transition-group>
         </div>
 
@@ -60,7 +62,10 @@
                         <option v-for="t in types" :key="t" :value="t">{{t}}</option>
                     </select>
                     <button @click="fetchBackpack" class="btn-search">查询</button>
-                    <button @click="clearBackpack" class="btn-clear" v-if="backpackPets.length">清空收藏</button>
+                    <button @click="handleClearClick" :class="['btn-clear', { 'is-confirming': isConfirming }]"
+                        v-if="backpackPets.length">
+                        {{ isConfirming ? '确定清空？' : '清空收藏' }}
+                    </button>
                 </div>
                 <a href="#" class="map-link">
                     <img id="map_in_bt" src="./img/mylike.png" alt="我的收藏" />
@@ -70,10 +75,15 @@
             <div v-if="!isLoggedIn" class="empty-msg">请先登录查看收藏</div>
 
             <transition-group name="list" tag="div" class="scroll-container">
+
+
                 <div v-for="pet in backpackPets" :key="pet.id" class="pet-card">
                     <div @click="goToDetail(pet.id)">
                         <img :src="'http://172.17.79.7:8080' + pet.imageUrl" alt="">
-                        <p>{{pet.name}}</p>
+                        <div class="pet-info">
+                            <p>{{pet.name}}</p>
+                            <small>{{pet.type1}}</small>
+                        </div>
                     </div>
                     <button @click.stop="handleRemoveFromBackpack(pet.id)" class="btn-clear">移除</button>
                 </div>
@@ -90,6 +100,22 @@
             getCurrentUserInfo,
             addToBackpack
         } from './js/api/index.js';
+        const handleApi = async (apiPromise) => {
+            try {
+                const res = await apiPromise;
+                if (res.code === 200) {
+                    // 只有成功才返回数据主体
+                    return res.data;
+                } else {
+                    // 业务失败，统一弹窗
+                    alert(res.message || '操作失败');
+                    return null;
+                }
+            } catch (err) {
+                console.error("网络请求异常:", err);
+                return null;
+            }
+        };
 
         const app = Vue.createApp({
             data() {
@@ -98,6 +124,8 @@
                     allPets: [],
                     backpackPets: [],
                     isLoggedIn: false,
+                    isConfirming: false,
+                    confirmTimer: null,
                     filter: {
                         name: '',
                         type: '',
@@ -112,109 +140,98 @@
             },
             async created() {
                 await this.checkLoginStatus();
-                // 必须先获取背包，再获取列表，才能正确标记 isOwned
                 await this.fetchBackpack();
                 this.fetchList();
             },
             methods: {
                 async checkLoginStatus() {
-                    try {
-                        const res = await getCurrentUserInfo();
-                        this.isLoggedIn = (res.code === 200);
-                    } catch (err) {
-                        this.isLoggedIn = false;
-                    }
+                    const userInfo = await handleApi(getCurrentUserInfo());
+                    this.isLoggedIn = !!userInfo;
                 },
 
                 async handleAddToBackpack(pet) {
-                    if (!this.isLoggedIn) {
-                        alert('请先登录再进行收藏');
-                        return;
+                    if (!this.isLoggedIn) return alert('请先登录');
+                    pet.isAdding = true;
+                    const data = await handleApi(addToBackpack(pet.id));
+                    if (data !== null) {
+                        pet.isOwned = true;
+                        await this.fetchBackpack();
                     }
-                    pet.isAdding = true; // 局部 Loading
-                    try {
-                        const res = await addToBackpack(pet.id);
-                        if (res.code === 200) {
-                            pet.isOwned = true; // 立即改变状态
-                            await this.fetchBackpack(); // 同步下方背包列表
-                        } else {
-                            alert(res.message || '收藏失败');
-                        }
-                    } catch (err) {
-                        console.error("收藏异常", err);
-                    } finally {
-                        pet.isAdding = false;
-                    }
+                    pet.isAdding = false;
                 },
 
                 async handleRemoveFromBackpack(id) {
-                    try {
-                        const res = await removeFromBackpack(id);
-                        if (res.code === 200) {
-                            // 1. 更新背包列表
-                            this.backpackPets = this.backpackPets.filter(p => p.id !== id);
-                            // 2. 同时更新上方全部列表中的 isOwned 状态
-                            const petInList = this.allPets.find(p => p.id === id);
-                            if (petInList) petInList.isOwned = false;
-                        }
-                    } catch (err) {
-                        alert("移除失败");
+                    const data = await handleApi(removeFromBackpack(id));
+                    if (data !== null) {
+                        this.backpackPets = this.backpackPets.filter(p => p.id !== id);
+                        const petInList = this.allPets.find(p => p.id === id);
+                        if (petInList) petInList.isOwned = false;
                     }
                 },
 
                 async fetchList() {
-                    try {
-                        const res = await getPokemonList(this.filter);
-                        if (res.code === 200) {
-                            const list = res.data.records || res.data;
-                            // 映射数据，注入 isOwned 和 isAdding 属性
-                            this.allPets = list.map(pet => ({
-                                ...pet,
-                                isOwned: this.backpackPets.some(b => b.id === pet.id),
-                                isAdding: false
-                            }));
-                        }
-                    } catch (err) {
-                        console.error("加载列表失败", err);
+                    const data = await handleApi(getPokemonList(this.filter));
+                    if (data) {
+                        const list = data.records || data;
+                        this.allPets = list.map(pet => ({
+                            ...pet,
+                            isOwned: this.backpackPets.some(b => b.id === pet.id),
+                            isAdding: false
+                        }));
                     }
                 },
 
                 async fetchBackpack() {
                     if (!this.isLoggedIn) return;
-                    try {
-                        const res = await getUserBackpack(this.backpackFilter);
-                        if (res.code === 200) {
-                            this.backpackPets = res.data.records || res.data;
-                        }
-                    } catch (err) {
-                        console.warn("获取收藏失败", err);
+                    const data = await handleApi(getUserBackpack(this.backpackFilter));
+                    if (data) {
+                        this.backpackPets = data.records || data;
                     }
                 },
-
-                goToDetail(id) {
-                    window.location.href = `./details.html?id=${id}`;
+                handleClearClick() {
+                    if (!this.isConfirming) {
+                        // 第一次点击：进入确认状态
+                        this.isConfirming = true;
+                        // 3秒后如果不点，自动重置状态，防止误触
+                        this.confirmTimer = setTimeout(() => {
+                            this.isConfirming = false;
+                        }, 3000);
+                    } else {
+                        // 第二次点击：真正执行
+                        this.executeClear();
+                        this.isConfirming = false;
+                        clearTimeout(this.confirmTimer);
+                    }
+                },
+                async executeClear() {
+                    const promises = this.backpackPets.map(pet => handleApi(removeFromBackpack(pet.id)));
+                    await Promise.all(promises);
+                    this.backpackPets = [];
+                    this.allPets.forEach(p => p.isOwned = false);
                 },
 
-                // 清空背包：使用 Promise.all 并发处理
                 async clearBackpack() {
                     if (!this.backpackPets.length) return;
                     if (!confirm('确定要移除当前列表下的所有收藏吗？')) return;
 
                     try {
-                        const promises = this.backpackPets.map(pet => removeFromBackpack(pet.id));
+                        const promises = this.backpackPets.map(pet => handleApi(removeFromBackpack(pet.id)));
                         await Promise.all(promises);
 
-                        // 清空本地数据，避免刷新整个页面
                         this.backpackPets = [];
                         this.allPets.forEach(p => p.isOwned = false);
 
-                        this.fetchBackpack(); // 最终同步一次后端状态
-                    } catch (err) {
-                        alert("清空部分失败，请重试");
                         this.fetchBackpack();
+                    } catch (err) {
+                        console.error("清空过程发生异常", err);
                     }
+                },
+
+                goToDetail(id) {
+                    globalThis.location.href = `./details.html?id=${id}`;
                 }
             }
+
         });
 
         app.component('common-header', CommonHeader);

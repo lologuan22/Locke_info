@@ -68,19 +68,118 @@
   transition: opacity 0.2s;
 }
 
-.btn-search {
-  background-color: #3498db;
-  color: white;
-}
-
-.btn-clear {
-  background-color: #e74c3c;
-  color: white;
-}
-
 .btn-search:hover,
 .btn-clear:hover {
   opacity: 0.8;
+}
+
+/* --- 统一按钮基础：去掉多余修饰 --- */
+.btn-search,
+.btn-clear {
+  padding: 8px 20px;
+  border-radius: 8px; /* 匹配输入框的圆角，更严谨 */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- 查询按钮：清爽的实色填充 --- */
+.btn-search {
+  background-color: #3498db;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.15);
+}
+
+.btn-search:hover {
+  background-color: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.25);
+}
+
+/* --- 清空按钮：极简幽灵按钮风 --- */
+.btn-clear {
+  background-color: #f5f6f7;
+  color: #7f8c8d;
+  border: 1px solid #e0e0e0;
+}
+
+.btn-clear:hover {
+  background-color: #fff1f0; /* 淡淡的红晕提示危险操作 */
+  color: #e74c3c;
+  border-color: #ffa39e;
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.1);
+}
+
+/* --- 点击反馈：轻微按压感 --- */
+.btn-search:active, 
+.btn-clear:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* --- 基础按钮重定义 --- */
+.btn-search,
+.btn-clear,
+.btn-add {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 12px; /* 更圆润 */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- 现代感“加入背包”按钮 (核心修改) --- */
+.btn-add {
+  background: rgba(52, 152, 219, 0.1); /* 浅色半透明背景 */
+  color: #3498db;
+  border: 1.5px solid rgba(52, 152, 219, 0.2);
+  backdrop-filter: blur(4px); /* 玻璃感 */
+}
+
+.btn-add:hover:not(:disabled) {
+  background: #3498db;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+  transform: translateY(-2px);
+}
+
+
+/* --- 按钮激活态 (点击波纹感) --- */
+.btn-search:active, .btn-clear:active, .btn-add:active {
+  transform: scale(0.92);
+}
+
+/* --- “已收藏”状态 (更高级的灰色系) --- */
+.btn-add.is-owned {
+  background: #f0f0f0 !important;
+  color: #a0a0a0 !important;
+  border: 1.5px solid #e0e0e0 !important;
+  cursor: default;
+  opacity: 0.7;
+}
+
+
+/* 已收藏/禁用状态 */
+.btn-add.is-owned, 
+.btn-add:disabled {
+  background-color: #f5f5f5 !important;
+  color: #bbb !important;
+  border-color: #eee !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* 右侧图标入口 */
@@ -129,6 +228,7 @@
   background: #c5e07d;
 }
 
+
 /* 精灵卡片样式 */
 .pet-card {
   flex: 0 0 130px;
@@ -155,21 +255,27 @@
   margin-bottom: 10px;
 }
 
+/* 修改原有 p 标签样式，取消 margin */
 .pet-card p {
-  margin: 5px 0;
+  margin: 0; 
   font-size: 14px;
   font-weight: bold;
   color: #333;
+  white-space: nowrap; /* 防止名字太长换行 */
 }
 
+/* 优化属性标签样式 */
 .pet-card small {
   display: inline-block;
-  background: #eee;
-  padding: 2px 8px;
+  background: #f0f0f0;
+  padding: 1px 6px;
   border-radius: 4px;
   font-size: 11px;
   color: #666;
+  border: 1px solid #e0e0e0;
+  white-space: nowrap;
 }
+
 
 /* 响应式调整 */
 @media (max-width: 768px) {
@@ -183,6 +289,29 @@
   .map-link {
     align-self: center;
   }
+}
+
+/* 针对卡片内部按钮的特殊布局 */
+.pet-card .btn-add, 
+.pet-card .btn-clear {
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 0;
+  font-size: 13px;
+  
+  /* 初始隐藏动画 */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s;
+}
+
+/* 悬停显示 */
+.pet-card:hover .btn-add,
+.pet-card:hover .btn-clear {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .list-enter-active,
@@ -201,4 +330,28 @@
   color: #999;
   cursor: not-allowed;
   border: 1px solid #ddd;
+}
+
+
+/* 新增：包裹名字和属性的容器 */
+.pet-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* 名字和属性之间的间距 */
+  margin-top: 5px;
+}
+
+/* 确认中的状态 */
+.btn-clear.is-confirming {
+  background-color: #ff4d4f; /* 醒目的红色 */
+  color: #fff;
+  border-color: #ff4d4f;
+  animation: shake 0.3s darkred; /* 增加一个轻微抖动效果 */
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>宠物对比 - 洛克王国图鉴</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <link rel="stylesheet" href="./css/header-styles.css">
+    <link rel="stylesheet" href="./css/auth-modal.css">
+    <link rel="stylesheet" href="./css/user-panel.css">
+    <link rel="stylesheet" href="./css/detail.css" />
+    <style>
+        /* 对比页面特有样式 */
+        .compare-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .compare-card {
+            flex: 1;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .vs-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff4d4f;
+            font-style: italic;
+        }
+
+        .stat-comparison-table {
+            width: 100%;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .higher-stat {
+            color: #52c41a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <common-header></common-header>
+
+        <div class="container">
+            <h2 style="width: 100%; margin-bottom: 20px; text-align: center;">宠物数值对决</h2>
+
+            <div v-if="loading" class="loading">正在加载对比数据...</div>
+
+            <template v-else-if="petA && petB">
+                <div class="compare-container" style="width: 100%;">
+                    <div class="compare-card">
+                        <img :src="'http://172.17.79.7:8080' + petA.imageUrl" width="120">
+                        <h4>{{ petA.name }}</h4>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="compare-card">
+                        <img :src="'http://172.17.79.7:8080' + petB.imageUrl" width="120">
+                        <h4>{{ petB.name }}</h4>
+                    </div>
+                </div>
+
+                <div class="chart-card" id="compareChart" ref="compareChartRef" style="width: 100%; height: 500px;">
+                </div>
+
+                <div class="skill-section">
+                    <h3>数值明细对比</h3>
+                    <table class="stat-comparison-table">
+                        <thead>
+                            <tr>
+                                <th>属性</th>
+                                <th>{{ petA.name }}</th>
+                                <th>{{ petB.name }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(label, index) in statLabels" :key="index">
+                                <td>{{ label }}</td>
+                                <td :class="{ 'higher-stat': petA.radarData[index] > petB.radarData[index] }">
+                                    {{ petA.radarData[index] }}
+                                </td>
+                                <td :class="{ 'higher-stat': petB.radarData[index] > petA.radarData[index] }">
+                                    {{ petB.radarData[index] }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+
+            <div v-else class="loading">请从列表选择两只宠物进行对比</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import CommonHeader from './js/components/header/HeaderContainer.js';
+        // 直接从你的接口模块中导入获取详情的方法
+        import { getPokemonDetail } from './js/api/index.js';
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    petA: null,
+                    petB: null,
+                    loading: true,
+                    statLabels: ['精力', '攻击', '防御', '魔攻', '魔抗', '速度']
+                };
+            },
+            methods: {
+                async initCompare() {
+                    const params = new URLSearchParams(window.location.search);
+                    const id1 = params.get('id1');
+                    const id2 = params.get('id2');
+
+                    if (!id1 || !id2) {
+                        this.loading = false;
+                        return;
+                    }
+
+                    try {
+                        // 使用封装好的 API 方法，它会自动处理 Token
+                        const [res1, res2] = await Promise.all([
+                            getPokemonDetail(id1),
+                            getPokemonDetail(id2)
+                        ]);
+
+                        // 根据 Result 结构获取数据
+                        if (res1.code === 200 && res2.code === 200) {
+                            this.petA = res1.data;
+                            this.petB = res2.data;
+                        } else {
+                            console.error("业务逻辑错误:", res1.message || res2.message);
+                        }
+
+                        this.loading = false;
+                        this.$nextTick(() => {
+                            this.renderCompareChart();
+                        });
+                    } catch (err) {
+                        // 这里的 err 如果是 401，通常会被 request.js 统一拦截处理
+                        console.error("加载对比失败:", err);
+                        this.loading = false;
+                    }
+                },
+                renderCompareChart() {
+                    if (!this.$refs.compareChartRef) return;
+                    const chart = echarts.init(this.$refs.compareChartRef);
+                    const option = {
+                        title: { text: '种族值对比' },
+                        tooltip: { trigger: 'axis' },
+                        legend: { data: [this.petA.name, this.petB.name], bottom: 0 },
+                        radar: {
+                            indicator: this.statLabels.map(name => ({ name, max: 200 })),
+                            shape: 'circle'
+                        },
+                        series: [{
+                            type: 'radar',
+                            data: [
+                                {
+                                    value: this.petA.radarData, // 这里的 radarData 对应 [精力, 攻击, 防御...]
+                                    name: this.petA.name,
+                                    areaStyle: { opacity: 0.3, color: '#1890ff' }
+                                },
+                                {
+                                    value: this.petB.radarData,
+                                    name: this.petB.name,
+                                    areaStyle: { opacity: 0.3, color: '#ff4d4f' }
+                                }
+                            ]
+                        }]
+                    };
+                    chart.setOption(option);
+                }
+            },
+            mounted() {
+                this.initCompare();
+            }
+        });
+
+        app.component('common-header', CommonHeader);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
