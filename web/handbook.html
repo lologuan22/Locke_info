@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>洛克王国 - 全精灵图鉴</title>
+  <link rel="stylesheet" href="./common.css" />
+  <link rel="stylesheet" href="./card.css">
+  <style>
+    /* 基础布局 */
+    body { margin: 0; padding: 0; }
+    .main { display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+    
+    /* 恢复背景框样式 */
+    .map { 
+        width: 95%; 
+        max-width: 1000px; 
+        padding: 20px; 
+        background-color: antiquewhite; /* 恢复背景色 */
+        box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3); /* 恢复阴影 */
+        border-radius: 15px; /* 恢复圆角 */
+        box-sizing: border-box;
+    }
+    
+    .search-bar { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; align-items: center; justify-content: center; }
+    
+    /* 核心样式：竖向滚动 + 间隔 */
+    .scroll-container { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+        gap: 20px; /* 卡片之间的间隔 */
+        overflow-y: auto; 
+        height: 65vh; /* 设置高度，超过就显示滚动条 */
+        padding: 10px;
+    }
+
+    /* 按钮样式 */
+    .btn-back { cursor: pointer; padding: 5px 10px; }
+  </style>
+</head>
+
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="main">
+    <div class="map">
+      <div style="margin-bottom: 10px;">
+        <button class="btn-back" onclick="window.location.href='m.html'">← 返回主菜单</button>
+      </div>
+      <h2 style="text-align: center; margin-top: 0;">全部精灵图鉴</h2>
+
+      <div class="search-bar">
+        <input type="text" id="nameSearch" placeholder="搜索精灵名称" />
+        <select id="typeSearch">
+          <option value="">全部属性</option>
+          <option value="水">水</option>
+          <option value="火">火</option>
+          <option value="草">草</option>
+          <option value="光">光</option>
+          <option value="翼">翼</option>
+          <option value="电">电</option>
+          <option value="冰">冰</option>
+          <option value="武">武</option>
+          <option value="土">土</option>
+          <option value="虫">虫</option>
+          <option value="幽灵">幽灵</option>
+          <option value="恶魔">恶魔</option>
+          <option value="龙">龙</option>
+          <option value="毒">毒</option>
+        </select>
+        <button onclick="loadList()">查询</button>
+      </div>
+
+      <div class="scroll-container" id="display-list">
+        <p>正在读取数据...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    fetch("./header.html").then(res => res.text()).then(html => {
+      document.getElementById("header-placeholder").innerHTML = html;
+    });
+  </script>
+  <script type="module" src="./color.js"></script>
+</body>
+</html>

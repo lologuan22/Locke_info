@@ -1,361 +1,120 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-  <meta charset="UTF-8">
-  <title>宠物详情 - 洛克王国图鉴</title>
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-  <link rel="stylesheet" href="./common.css">
-  <style>
-    /* 页面默认背景，会被Vue动态覆盖 */
-    body {
-      background: #f5f7fa;
-      transition: background-color 0.5s ease;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-wrap: wrap;
-      min-height: 400px;
-    }
-
-    .info-card {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .chart-card {
-      flex: 1;
-      min-width: 350px;
-      height: 400px;
-    }
-
-    .skill-section {
-      width: 100%;
-      margin-top: 30px;
-    }
-
-    .pet-img {
-      width: 200px;
-      height: 200px;
-      border-radius: 8px;
-      object-fit: contain;
-      background: #fafafa;
-      border: 1px solid #eee;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f8f9fa;
-    }
-
-    .suggestion {
-      background: #e6f7ff;
-      padding: 15px;
-      border-left: 4px solid #1890ff;
-      margin-top: 20px;
-    }
-
-    .loading {
-      text-align: center;
-      width: 100%;
-      padding: 50px;
-      color: #666;
-    }
-
-    .pet-display-container {
-      display: flex;
-      align-items: flex-start;
-      gap: 30px;
-      margin-top: 20px;
-    }
-
-    .pet-photo {
-      flex: 0 0 200px;
-      text-align: center;
-    }
-
-    .stat-bars {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .stat-label {
-      width: 40px;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .bar-container {
-      flex: 1;
-      height: 12px;
-      background: #eee;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #1890ff, #36cfc9);
-      transition: width 0.5s ease-in-out;
-    }
-
-    .stat-value {
-      width: 30px;
-      font-family: monospace;
-      font-weight: bold;
-      color: #1890ff;
-    }
-
-    .description {
-      margin-top: 20px;
-      padding-top: 15px;
-      border-top: 1px solid #eee;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="header-placeholder"></div>
-  <script>
-    fetch('./header.html')
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById('header-placeholder').innerHTML = html
-      })
-  </script>
-  
-  <div id="app" class="container">
-    <div v-if="loading" class="loading">加载中...</div>
-
-    <template v-else-if="pet">
-      <div class="info-card">
-        <h1>#{{pet.number}} {{pet.name}}</h1>
-
-        <div class="pet-display-container">
-          <div class="pet-photo" :style="{ 
-            background: getTypeLightColor(pet.type1),
-            padding: '10px', 
-            borderRadius: '8px' 
-          }">
-            <img :src="'http://172.17.79.7:8080' + pet.imageUrl" class="pet-img" :alt="pet.name">
-            <p><strong>系别：</strong> {{pet.type1}}</p>
-            <p><strong>身高：</strong> {{pet.height}} m </p>
-            <p><strong>体重：</strong> {{pet.weight}} kg</p>
-          </div>
-
-          <div class="stat-bars">
-            <div class="stat-item" v-for="(val, index) in pet.radarData" :key="index">
-              <span class="stat-label">{{ ['精力','攻击','防御','魔攻','魔抗','速度'][index] }}</span>
-              <div class="bar-container">
-                <div class="bar-fill" :style="{ width: (val/200*100) + '%' }"></div>
-              </div>
-              <span class="stat-value">{{ val }}</span>
-            </div>
-          </div>
-        </div>
-
-        <p class="description"><strong>简介：</strong> {{pet.description}}</p>
-        <div class="suggestion">
-          <strong>养成建议：</strong> {{pet.suggestion}}
-        </div>
-      </div>
-
-      <div id="radarChart" class="chart-card"></div>
-
-      <div class="skill-section">
-        <h3>掌握技能</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>名称</th>
-              <th>属性</th>
-              <th>分类</th>
-              <th>威力</th>
-              <th>PP</th>
-              <th>效果</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="skill in pet.skills" :key="skill.id">
-              <td>{{skill.name}}</td>
-              <td>{{skill.type}}</td>
-              <td>{{skill.category}}</td>
-              <td>{{skill.power || '-'}}</td>
-              <td>{{skill.pp}}</td>
-              <td>{{skill.effect}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </template>
-
-    <div v-else class="loading">未找到该宠物信息</div>
-  </div>
-
-  <script type="module">
-    import { getPokemonDetail } from './js/api/index.js';
-
-    new Vue({
-      el: '#app',
-      data: {
-        pet: null,
-        loading: true,
-        myChart: null
-      },
-      mounted() {
-        this.fetchData();
-        window.addEventListener('resize', () => {
-          this.myChart && this.myChart.resize();
-        });
-      },
-      methods: {
-        getQueryParam(name) {
-          const urlParams = new URLSearchParams(window.location.search);
-          return urlParams.get(name);
-        },
-
-        // ======================
-        // ✅ 浅色柔和背景（页面背景用）
-        // ======================
-        getTypePageBgColor(type) {
-          const colorMap = {
-            '水': '#e6f7ff',
-            '火': '#fff2e6',
-            '草': '#f0fff4',
-            '翼': '#f8feff',
-            '电': '#fff9e6',
-            '冰': '#f0fcff',
-            '武': '#fff5f2',
-            '光': '#fffbe6',
-            '土': '#f5f0e6',
-            '虫': '#f5f9e6',
-            '龙': '#ffe6e6',
-            '幽灵': '#f5f0ff',
-            '恶魔': '#f0e6f5',
-            '毒': '#f9e6ff',
-            '石': '#f0f0f0'
-          };
-          return colorMap[type] || '#f5f7fa';
-        },
-
-        // ======================
-        // ✅ 卡片背景（稍深一点）
-        // ======================
-        getTypeLightColor(type) {
-          const colorMap = {
-            '水': '#d1eaff',
-            '火': '#ffdfb3',
-            '草': '#d1f7e0',
-            '翼': '#e6f9ff',
-            '电': '#fff2b3',
-            '冰': '#d1f5ff',
-            '武': '#ffe9df',
-            '光': '#fff7b3',
-            '土': '#efe6d1',
-            '虫': '#eff2c7',
-            '龙': '#ffd1d1',
-            '幽灵': '#e9d9ff',
-            '恶魔': '#e4c7f2',
-            '毒': '#f7c7ff',
-            '石': '#e0e0e0'
-          };
-          return colorMap[type] || '#f0f0f0';
-        },
-
-        // ======================
-        // ✅ 设置整个页面背景
-        // ======================
-        setBodyBackground(type) {
-          document.body.style.backgroundColor = this.getTypePageBgColor(type);
-        },
-
-        async fetchData() {
-          const id = this.getQueryParam('id');
-          try {
-            const res = await getPokemonDetail(id);
-            if (res.code === 200) {
-              this.pet = res.data;
-              
-              // ✅ 加载完成后自动改页面背景
-              this.setBodyBackground(this.pet.type1);
-
-              setTimeout(() => {
-                this.initChart(this.pet.radarData);
-              }, 100);
-            }
-          } catch (err) {
-            console.error("数据加载失败", err);
-          } finally {
-            this.loading = false;
-          }
-        },
-
-        initChart(radarData) {
-          const chartDom = document.getElementById('radarChart');
-          if (!chartDom || !radarData) return;
-
-          this.myChart = echarts.init(chartDom);
-
-          const option = {
-            title: { text: '能力分布', left: 'center' },
-            tooltip: {},
-            radar: {
-              indicator: [
-                { name: '精力', max: 200 },
-                { name: '攻击', max: 200 },
-                { name: '防御', max: 200 },
-                { name: '魔攻', max: 200 },
-                { name: '魔抗', max: 200 },
-                { name: '速度', max: 200 }
-              ],
-              shape: 'circle'
-            },
-            series: [{
-              type: 'radar',
-              data: [{
-                value: radarData,
-                name: '种族值',
-                areaStyle: { color: 'rgba(24, 144, 255, 0.4)' },
-                lineStyle: { color: '#1890ff', width: 2 }
-              }]
-            }]
-          };
-          this.myChart.setOption(option);
+    <meta charset="UTF-8">
+    <title>洛克王国 - 全精灵图鉴</title>
+    <link rel="stylesheet" href="./common.css">
+    <style>
+        body { 
+            background-color: #fcf8f0; 
+            margin: 0; 
+            padding: 20px; 
+            font-family: "Microsoft YaHei", sans-serif;
+            /* 确保页面可以滚动 */
+            overflow-y: auto; 
         }
-      }
-    });
-  </script>
-  <script type="module" src="./top.js"></script>
-</body>
 
+        .main-body { 
+            width: 95%; 
+            max-width: 1200px; /* 稍微调大一点宽度以容纳更多卡片 */
+            margin: 0 auto; 
+        }
+        
+        /* 面板样式：去掉了高度限制，允许自动延伸 */
+        .panel { 
+            background: #fffdf5; 
+            border: 2px solid #e0d5c0; 
+            border-radius: 15px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            min-height: 80vh; /* 保证至少占满一屏 */
+        }
+
+        .panel-title { 
+            font-weight: bold; 
+            color: #5d4d35;
+            border-bottom: 2px solid #e0d5c0; 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* 返回按钮 */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 6px 12px;
+            background-color: #f0e6d2;
+            color: #5d4d35;
+            border: 1px solid #c4b7a5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-back::before {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 5px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%235d4d35' d='M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.2 288H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H109.2l105.4-105.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z'/%3E%3C/svg%3E");
+            background-size: contain;
+        }
+        .btn-back:hover { background-color: #e0d5c0; }
+
+        /* 搜索控件 */
+        .controls { display: flex; gap: 10px; margin-bottom: 30px; align-items: center; flex-wrap: wrap; }
+        input, select { padding: 6px 10px; border: 1px solid #c4b7a5; border-radius: 4px; background: #fff; }
+        .btn-search { padding: 6px 15px; background: #f0e6d2; border: 1px solid #c4b7a5; cursor: pointer; border-radius: 4px; }
+
+        /* 核心网格：自动换行，自动扩充 */
+        .sprite-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            gap: 20px; 
+        }
+
+        /* 精灵卡片 */
+        .sprite-card { 
+            background: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            padding: 10px; 
+            text-align: center; 
+            transition: transform 0.2s;
+        }
+        .sprite-card:hover { transform: scale(1.05); }
+        .sprite-name { margin-top: 8px; font-size: 14px; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div id="header-placeholder"></div>
+    <div class="holdplace"></div>
+
+    <div class="main-body">
+        <div class="panel">
+            <div class="panel-title">全部精灵图鉴</div>
+            <button class="btn-back" onclick="window.location.href='m.html'">返回主界面</button>
+            
+            <div class="controls">
+                <input type="text" id="search-input" placeholder="输入名称搜索...">
+                <select><option>全部属性</option></select>
+                <button class="btn-search">搜索</button>
+            </div>
+            
+            <div id="sprite-list" class="sprite-grid">
+                <div class="sprite-card"><img src="https://via.placeholder.com/80" alt="精灵"><div class="sprite-name">精灵名称</div></div>
+                </div>
+        </div>
+    </div>
+
+    <script>
+        fetch('./header.html').then(res => res.text()).then(html => document.getElementById('header-placeholder').innerHTML = html);
+
+        // 可以在此处添加逻辑：批量将数据库所有精灵渲染到 #sprite-list 中
+    </script>
+</body>
 </html>
