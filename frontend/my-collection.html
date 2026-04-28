@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的冒险手册 - 洛克王国收藏</title>
+    <link rel="stylesheet" href="./css/header-styles.css" />
+    <link rel="stylesheet" href="./css/auth-modal.css">
+    <link rel="stylesheet" href="./css/user-panel.css">
+    <link rel="stylesheet" href="./css/my-collection.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="app" class="collection-page" v-cloak>
+        <common-header @login-success="onLoginSuccess"></common-header>
+
+        <header class="collection-hero">
+            <div class="hero-content">
+                <h1>我的冒险手册</h1>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="label">已点亮图鉴</span>
+                        <span class="value">{{ backpackPets.length }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">当前等级</span>
+                        <span class="value">高阶训练师</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="filter-section">
+                <div class="type-tags">
+                    <button 
+                        v-for="t in types" 
+                        :key="t" 
+                        @click="toggleType(t)"
+                        :class="['type-tag', { active: filter.type === t }]">
+                        {{ t }}
+                    </button>
+                    <button class="type-tag reset" @click="filter.type = ''">全部</button>
+                </div>
+                <div class="search-box">
+                    <input type="text" v-model="filter.name" placeholder="寻找老伙伴..." @keyup.enter="fetchBackpack" />
+                </div>
+            </section>
+
+            <div v-if="!isLoggedIn" class="empty-state">
+                <img src="./img/lock-icon.png" alt="未登录">
+                <p>只有登录后的训练师才能开启冒险手册</p>
+            </div>
+
+            <div v-else-if="filteredPets.length === 0" class="empty-state">
+                <img src="./img/empty-backpack.png" alt="空空如也">
+                <p>还没有精灵加入你的队伍，快去<a href="./home.html">捕获</a>吧！</p>
+            </div>
+
+            <transition-group name="grid" tag="div" class="pet-grid" v-else>
+                <div v-for="pet in filteredPets" :key="pet.id" class="collection-card">
+                    <div class="card-inner" @click="goToDetail(pet.id)">
+                        <div class="type-badge">{{ pet.type1 }}</div>
+                        <div class="image-wrapper">
+                            <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
+                        </div>
+                        <div class="card-info">
+                            <h3>{{ pet.name }}</h3>
+                            <p class="pet-id">#{{ pet.id.toString().padStart(3, '0') }}</p>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button @click="handleRemove(pet.id)" class="btn-release">告别</button>
+                    </div>
+                </div>
+            </transition-group>
+        </main>
+    </div>
+
+    <script type="module">
+        import CommonHeader from './js/components/header/HeaderContainer.js';
+        import { getUserBackpack, removeFromBackpack, getCurrentUserInfo } from './js/api/index.js';
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    types: ['水', '火', '草', '光', '翼', '电', '冰', '武', '土', '虫', '幽灵', '恶魔', '龙', '毒'],
+                    backpackPets: [],
+                    isLoggedIn: false,
+                    filter: {
+                        name: '',
+                        type: ''
+                    }
+                }
+            },
+            computed: {
+                // 前端辅助筛选，增强响应速度
+                filteredPets() {
+                    return this.backpackPets.filter(p => {
+                        const nameMatch = p.name.includes(this.filter.name);
+                        const typeMatch = this.filter.type ? p.type1 === this.filter.type : true;
+                        return nameMatch && typeMatch;
+                    });
+                }
+            },
+            async created() {
+                await this.checkLoginStatus();
+                if (this.isLoggedIn) this.fetchBackpack();
+            },
+            methods: {
+                async checkLoginStatus() {
+                    try {
+                        const res = await getCurrentUserInfo();
+                        this.isLoggedIn = res.code === 200 && !!res.data;
+                    } catch { this.isLoggedIn = false; }
+                },
+                async fetchBackpack() {
+                    const res = await getUserBackpack(this.filter);
+                    if (res.code === 200) {
+                        this.backpackPets = res.data.records || res.data;
+                    }
+                },
+                toggleType(t) {
+                    this.filter.type = this.filter.type === t ? '' : t;
+                },
+                async handleRemove(id) {
+                    if (!confirm('确定要让它回到王国森林吗？')) return;
+                    const res = await removeFromBackpack(id);
+                    if (res.code === 200) {
+                        this.backpackPets = this.backpackPets.filter(p => p.id !== id);
+                    }
+                },
+                goToDetail(id) {
+                    window.location.href = `./details.html?id=${id}`;
+                },
+                onLoginSuccess() {
+                    this.isLoggedIn = true;
+                    this.fetchBackpack();
+                }
+            }
+        });
+
+        app.component('common-header', CommonHeader);
+        app.mount('#app');
+    </script>
+</body>
+</html>

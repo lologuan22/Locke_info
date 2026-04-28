@@ -49,6 +49,7 @@ export default {
     });
 
     // 1. 更新头像逻辑
+    // UserPanel.js 内部的 upload 函数优化
     const upload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -57,24 +58,33 @@ export default {
         const fd = new FormData();
         fd.append("file", file);
 
-        // 第一步：上传文件到服务器
+        // 1. 上传文件
         const res = await api.uploadAvatar(fd);
-        if (res.code === 200) {
-          const newAvatarPath = res.data; // 后端返回的新路径
 
-          // 第二步：将新路径更新到用户信息中
-          const updateRes = await api.updateProfile({
-            avatarUrl: newAvatarPath,
-          });
-          if (updateRes.code === 200) {
-            // 第三步：通知父组件更新 UI 和缓存
-            emit("update", updateRes.data);
-            alert("头像更新成功！");
-          }
+        // 业务错误拦截：如果后端返回 code 不是 200
+        if (res.code !== 200) {
+          throw new Error(res.message || "服务器文件上传失败");
+        }
+
+        const newAvatarPath = res.data;
+
+        // 2. 更新用户信息
+        const updateRes = await api.updateProfile({
+          avatarUrl: newAvatarPath,
+        });
+
+        if (updateRes.code === 200) {
+          // 成功提示
+          emit("update", updateRes.data);
+          alert("头像更新成功！");
+        } else {
+          // 这里的 else 也要处理：虽然请求通了，但业务逻辑没成功
+          throw new Error(updateRes.message || "用户信息更新失败");
         }
       } catch (err) {
-        console.error("头像上传失败:", err);
-        alert("头像更新失败，请稍后再试");
+        // 3. 失败提示：统一捕获所有错误（网络错误、404、500、业务 Throw 的 Error）
+        console.error("头像上传过程出错:", err);
+        alert("头像更新失败：" + (err.message || "未知错误"));
       }
     };
 

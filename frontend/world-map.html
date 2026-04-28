@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>洛克王国wiki - 全球图鉴</title>
+    <link rel="stylesheet" href="./css/header-styles.css" />
+    <link rel="stylesheet" href="./css/auth-modal.css">
+    <link rel="stylesheet" href="./css/user-panel.css">
+    <style>
+        :root {
+            --pet-card-size: 240px;
+            --accent-color: #ffcc00;
+            --header-height: 70px;
+            --favorite-color: #ff4757;
+        }
+
+        body {
+            background: #f0f2f5 url('./img/map-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            padding-top: var(--header-height);
+            /* 预留 Header 空间 */
+        }
+
+        /* 1. 强化容器限制 */
+        .wiki-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            /* 必须添加：防止 padding 撑大容器 */
+        }
+
+        /* 2. 修复网格布局 */
+        .pet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--pet-card-size), 1fr));
+            gap: 25px;
+            padding: 10px 0;
+        }
+
+        /* 3. 修复卡片溢出 */
+        .pet-card-big {
+            position: relative;
+            /* 必须添加：作为收藏按钮的定位基准 */
+            background: white;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            /* 必须添加：裁剪掉多余内容 */
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s;
+        }
+
+        /* 4. 关键：严格限制图片大小 */
+        .pet-card-big img {
+            width: 100%;
+            /* 宽度填满卡片 */
+            height: 180px;
+            /* 必须设定固定高度 */
+            object-fit: contain;
+            /* 保持比例，不会变形 */
+            background: #fcfcfc;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .pet-info-big {
+            padding: 15px;
+            text-align: center;
+            flex-grow: 1;
+            /* 让信息部分填充剩余空间 */
+        }
+
+        /* 收藏按钮样式保持不变 */
+        .btn-fav {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 之前的 SVG 和 动画样式保持原样... */
+
+        [v-cloak] {
+            display: none !important;
+        }
+
+        .btn-fav:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-fav svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: #999;
+            stroke-width: 2.5;
+            transition: all 0.3s;
+        }
+
+        /* 激活状态：红色填充和描边 */
+        .btn-fav.active svg {
+            fill: var(--favorite-color);
+            stroke: var(--favorite-color);
+            animation: heartBeat 0.3s ease-in-out;
+        }
+
+        @keyframes heartBeat {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .hud {
+            width: 100%;
+            background: rgba(217, 242, 154, 0.95);
+            /* 增加一点透明度 */
+            backdrop-filter: blur(5px);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            height: 70px;
+            /* 与 --header-height 一致 */
+            display: flex;
+            align-items: center;
+        }
+
+        .top {
+            width: 100%;
+            /* 确保撑开 */
+            max-width: 1400px;
+            /* 建议与 wiki-container 对齐 */
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+    </style>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <common-header @login-success="onLoginSuccess"></common-header>
+
+        <div class="wiki-container">
+            <header class="filter-header">
+                <h1>精灵大图鉴</h1>
+                <div class="search-box">
+                    <input type="text" v-model="filter.name" placeholder="输入精灵名称搜索..." @keyup.enter="fetchList" />
+                    <select v-model="filter.type" @change="fetchList">
+                        <option value="">所有系别</option>
+                        <option v-for="t in types" :key="t" :value="t">{{t}}系</option>
+                    </select>
+                </div>
+            </header>
+
+            <transition-group name="list" tag="div" class="pet-grid">
+                <div v-for="pet in allPets" :key="pet.id" class="pet-card-big" @click="goToDetail(pet.id)">
+                    <button class="btn-fav" :class="{ active: pet.isOwned }" @click.stop="toggleBackpack(pet)">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                        </svg>
+                    </button>
+
+                    <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
+
+                    <div class="pet-info-big">
+                        <h3>{{pet.name}}</h3>
+                        <span class="pet-type-tag">{{pet.type1}}</span>
+                    </div>
+                </div>
+            </transition-group>
+
+            <div v-if="allPets.length === 0" style="text-align: center; padding: 50px; color: #999;">
+                未找到相关精灵，换个关键词试试吧~
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import CommonHeader from './js/components/header/HeaderContainer.js';
+        import {
+            getPokemonList,
+            getUserBackpack,
+            removeFromBackpack,
+            getCurrentUserInfo,
+            addToBackpack
+        } from './js/api/index.js';
+
+        // 统一API处理器
+        const handleApi = async (apiPromise) => {
+            try {
+                const res = await apiPromise;
+                return res.code === 200 ? res.data : (alert(res.message), null);
+            } catch (err) {
+                return null;
+            }
+        };
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    types: ['水', '火', '草', '光', '翼', '电', '冰', '武', '土', '虫', '幽灵', '恶魔', '龙', '毒'],
+                    allPets: [],
+                    backpackIds: new Set(),
+                    isLoggedIn: false,
+                    filter: { name: '', type: '', current: 1, size: 60 } // 图鉴页一次展示更多
+                }
+            },
+            async created() {
+                await this.checkLoginStatus();
+                await this.fetchBackpackIds();
+                this.fetchList();
+            },
+            methods: {
+                async checkLoginStatus() {
+                    const userInfo = await handleApi(getCurrentUserInfo());
+                    this.isLoggedIn = !!userInfo;
+                },
+                async fetchBackpackIds() {
+                    if (!this.isLoggedIn) return;
+                    const data = await handleApi(getUserBackpack({ name: '', type: '' }));
+                    if (data) {
+                        const list = data.records || data;
+                        this.backpackIds = new Set(list.map(p => p.id));
+                    }
+                },
+                async fetchList() {
+                    const data = await handleApi(getPokemonList(this.filter));
+                    if (data) {
+                        const list = data.records || data;
+                        this.allPets = list.map(pet => ({
+                            ...pet,
+                            isOwned: this.backpackIds.has(pet.id)
+                        }));
+                    }
+                },
+                async toggleBackpack(pet) {
+                    if (!this.isLoggedIn) return alert('请先登录后再收藏精灵');
+
+                    if (pet.isOwned) {
+                        const res = await handleApi(removeFromBackpack(pet.id));
+                        if (res !== null) {
+                            pet.isOwned = false;
+                            this.backpackIds.delete(pet.id);
+                        }
+                    } else {
+                        const res = await handleApi(addToBackpack(pet.id));
+                        if (res !== null) {
+                            pet.isOwned = true;
+                            this.backpackIds.add(pet.id);
+                        }
+                    }
+                },
+                goToDetail(id) {
+                    window.location.href = `./details.html?id=${id}`;
+                },
+                onLoginSuccess() {
+                    location.reload(); // 登录成功刷新页面同步状态
+                }
+            }
+        });
+
+        app.component('common-header', CommonHeader);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

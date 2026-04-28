@@ -28,9 +28,10 @@
                     </select>
                     <button @click="fetchList" class="btn-search">查询</button>
                 </div>
-                <a href="#" class="map-link">
-                    <img id="map_in_bt" src="./img/imgmap.png" alt="地图入口" />
+                <a href="./world-map.html" class="map-link">
+                    <img id="map_in_bt" src="./img/imgmap.png" alt="图鉴入口" />
                 </a>
+
             </div>
 
             <transition-group name="list" tag="div" class="scroll-container">
@@ -67,7 +68,8 @@
                         {{ isConfirming ? '确定清空？' : '清空收藏' }}
                     </button>
                 </div>
-                <a href="#" class="map-link">
+
+                <a href="./my-collection.html" class="map-link">
                     <img id="map_in_bt" src="./img/mylike.png" alt="我的收藏" />
                 </a>
             </div>
