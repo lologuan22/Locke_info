@@ -1,8 +1,10 @@
 import * as api from "../../api/index.js";
 
+import { CONFIG } from "../../config.js";
+
 export const AuthService = {
   // 基础配置
-  BASE_URL: "http://172.17.79.7:8080",
+  BASE_URL: CONFIG.BASE_URL,
 
   // 保存登录数据
   saveSession(token, userInfo) {

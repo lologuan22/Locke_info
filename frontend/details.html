@@ -27,7 +27,7 @@
           <h2>{{ pet.name }} (ID: {{ pet.id }})</h2>
           <div class="pet-display-container">
             <div class="pet-photo">
-              <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name" class="pet-img">
+              <img :src="formatImg(pet.imageUrl)" :alt="pet.name" class="pet-img">
             </div>
             <div class="stat-bars">
               <div v-for="(label, index) in ['精力', '攻击', '防御', '魔攻', '魔抗', '速度']" :key="index" class="stat-item">
@@ -82,8 +82,7 @@
               :class="['pet-card', { 'selected-target': selectedCompareId === target.id }]"
               @click="selectedCompareId = target.id"
               style="flex: 0 0 120px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; padding: 10px; text-align: center; background: #f9f9f9; border-radius: 12px;">
-              <img :src="'http://172.17.79.7:8080' + target.imageUrl"
-                style="width: 80px; height: 80px; object-fit: contain;">
+              <img :src="formatImg(target.imageUrl)" style="width: 80px; height: 80px; object-fit: contain;">
               <p style="font-size: 14px; margin: 5px 0;">{{ target.name }}</p>
               <small style="color: #666;">{{ target.type1 }}</small>
             </div>
@@ -139,6 +138,8 @@
   import { PetChartController } from './js/utils/petChartController.js';
   import CommonHeader from './js/components/header/HeaderContainer.js';
 
+  import { getImageUrl } from './js/config.js';
+
   const chartCtrl = new PetChartController();
   const { fetchPetDetail } = usePetData();
   const { getRecommendedNature, getPetRole, getDynamicAdvice } = usePetLogic();
@@ -164,6 +165,9 @@
       dynamicAdvice() { return getDynamicAdvice(this.pet?.radarData); }
     },
     methods: {
+      formatImg(url) {
+        return getImageUrl(url);
+      },
       async initPage() {
         try {
           this.pet = await fetchPetDetail();

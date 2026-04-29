@@ -38,7 +38,7 @@
 
                 <div v-for="pet in allPets" :key="pet.id" class="pet-card">
                     <div @click="goToDetail(pet.id)">
-                        <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
+                        <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
                         <div class="pet-info">
                             <p>{{pet.name}}</p>
                             <small>{{pet.type1}}</small>
@@ -81,7 +81,7 @@
 
                 <div v-for="pet in backpackPets" :key="pet.id" class="pet-card">
                     <div @click="goToDetail(pet.id)">
-                        <img :src="'http://172.17.79.7:8080' + pet.imageUrl" alt="">
+                        <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
                         <div class="pet-info">
                             <p>{{pet.name}}</p>
                             <small>{{pet.type1}}</small>
@@ -95,6 +95,7 @@
 
     <script type="module">
         import CommonHeader from './js/components/header/HeaderContainer.js';
+        import { getImageUrl } from './js/config.js';
         import {
             getPokemonList,
             getUserBackpack,
@@ -146,6 +147,9 @@
                 this.fetchList();
             },
             methods: {
+                formatImg(url) {
+                    return getImageUrl(url);
+                },
                 async onLoginSuccess() {
                     this.isLoggedIn = true;
                     await this.fetchBackpack(); // 重新拉取收藏列表

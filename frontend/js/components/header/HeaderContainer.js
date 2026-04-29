@@ -1,8 +1,6 @@
 import AuthModal from "./AuthModal.js";
 import UserPanel from "./UserPanel.js";
-
-const BASE_URL = "http://172.17.79.7:8080";
-
+import {CONFIG}from "../../config.js";
 export default {
   components: { AuthModal, UserPanel },
   template: `
@@ -28,7 +26,7 @@ export default {
       if (!path) console.warn("用户信息中缺少 avatarUrl 字段");
       return path.startsWith("http")
         ? path
-        : `${BASE_URL}/${path.replace(/^\//, "")}`;
+        : `${CONFIG.BASE_URL}/${path.replace(/^\//, "")}`;
     });
 
     const initAuth = () => {

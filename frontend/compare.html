@@ -148,12 +148,12 @@
             <template v-else-if="petA && petB">
                 <div class="compare-container" style="width: 100%;">
                     <div class="compare-card">
-                        <img :src="'http://172.17.79.7:8080' + petA.imageUrl" width="120">
+                         <img :src="formatImg(petA.imageUrl)" :alt="petA.name">
                         <h4>{{ petA.name }}</h4>
                     </div>
                     <div class="vs-badge">VS</div>
                     <div class="compare-card">
-                        <img :src="'http://172.17.79.7:8080' + petB.imageUrl" width="120">
+                           <img :src="formatImg(petB.imageUrl)" :alt="petB.name">
                         <h4>{{ petB.name }}</h4>
                     </div>
                 </div>
@@ -195,6 +195,7 @@
         // 直接从你的接口模块中导入获取详情的方法
         import { getPokemonDetail } from './js/api/index.js';
 
+        import { getImageUrl } from './js/config.js';
         const app = Vue.createApp({
             data() {
                 return {
@@ -205,6 +206,10 @@
                 };
             },
             methods: {
+                formatImg(url) {
+                    console.log('原始URL:', url);
+                    return getImageUrl(url);
+                },
                 async initCompare() {
                     const params = new URLSearchParams(window.location.search);
                     const id1 = params.get('id1');

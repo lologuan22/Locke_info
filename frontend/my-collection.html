@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -35,10 +36,7 @@
         <main class="container">
             <section class="filter-section">
                 <div class="type-tags">
-                    <button 
-                        v-for="t in types" 
-                        :key="t" 
-                        @click="toggleType(t)"
+                    <button v-for="t in types" :key="t" @click="toggleType(t)"
                         :class="['type-tag', { active: filter.type === t }]">
                         {{ t }}
                     </button>
@@ -64,7 +62,7 @@
                     <div class="card-inner" @click="goToDetail(pet.id)">
                         <div class="type-badge">{{ pet.type1 }}</div>
                         <div class="image-wrapper">
-                            <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
+                            <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
                         </div>
                         <div class="card-info">
                             <h3>{{ pet.name }}</h3>
@@ -82,7 +80,7 @@
     <script type="module">
         import CommonHeader from './js/components/header/HeaderContainer.js';
         import { getUserBackpack, removeFromBackpack, getCurrentUserInfo } from './js/api/index.js';
-
+        import { getImageUrl } from './js/config.js';
         const app = Vue.createApp({
             data() {
                 return {
@@ -110,6 +108,9 @@
                 if (this.isLoggedIn) this.fetchBackpack();
             },
             methods: {
+                formatImg(url) {
+                    return getImageUrl(url);
+                },
                 async checkLoginStatus() {
                     try {
                         const res = await getCurrentUserInfo();
@@ -146,4 +147,5 @@
         app.mount('#app');
     </script>
 </body>
+
 </html>

@@ -190,7 +190,7 @@
                         </svg>
                     </button>
 
-                    <img :src="'http://172.17.79.7:8080' + pet.imageUrl" :alt="pet.name">
+                    <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
 
                     <div class="pet-info-big">
                         <h3>{{pet.name}}</h3>
@@ -207,6 +207,7 @@
 
     <script type="module">
         import CommonHeader from './js/components/header/HeaderContainer.js';
+        import { getImageUrl } from './js/config.js';
         import {
             getPokemonList,
             getUserBackpack,
@@ -241,6 +242,9 @@
                 this.fetchList();
             },
             methods: {
+                formatImg(url) {
+                    return getImageUrl(url);
+                },
                 async checkLoginStatus() {
                     const userInfo = await handleApi(getCurrentUserInfo());
                     this.isLoggedIn = !!userInfo;
