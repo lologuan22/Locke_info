@@ -224,7 +224,8 @@ body {
 }
 
 .avatar-popup .username {
-    font-weight: bold;
+    font-weight: 400;
+    color: darkgoldenrod;
     font-size: 15px;
 }
 
