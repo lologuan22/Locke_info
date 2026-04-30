@@ -15,8 +15,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- 1. 用户表 users
 INSERT INTO users (username, password, email, nickname, avatar_url, created_at, updated_at, last_login, status)
 VALUES
-('admin','123456','admin@qq.com','王国管理员','/api/avatars/default.png',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,NULL,1),
-('xiaoluoke','123456','luoke@qq.com','小训练师','/api/avatars/default.png',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,NULL,1);
+('admin','$2a$10$pdmBhpdU9kL61CG2kb6UpepnHon7LNduOXUivx65SpX5mxP8thhuW','admin@qq.com','王国管理员','/api/avatars/default.png',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,NULL,1),
+('xiaoluoke','$2a$10$qM33xH9N516nYS7ruEPMYuo/6jdTIz3uS/KT3Fu1IY4ldzSZ6Pgx6','luoke@qq.com','小训练师','/api/avatars/default.png',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,NULL,1);
 
 -- 2. 宠物基础表 pokemon
 INSERT INTO pokemon (number,name,type1,height,weight,description,image_url,is_legendary,is_rare) VALUES
