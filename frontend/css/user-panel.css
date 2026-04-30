@@ -1,0 +1,128 @@
+.user-area {
+    position: relative;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.user-avatar:hover {
+    transform: scale(1.1);
+}
+
+/* 弹出层面板 - 类似 iOS/macOS 的卡片感 */
+.avatar-popup {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 60px;
+    width: 260px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    padding: 24px;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.05);
+    z-index: 101;
+    /* 入场动画 */
+    animation: fadeInTop 0.3s ease-out;
+}
+
+@keyframes fadeInTop {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar-popup.show {
+    display: flex;
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.avatar-big {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 12px;
+    object-fit: cover;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.username {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 18px;
+}
+
+/* 昵称修改区域 - 更加紧凑整洁 */
+.nickname-edit-wrap {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.nickname-edit-wrap input {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    outline: none;
+}
+
+.nickname-edit-wrap button {
+    padding: 8px 16px;
+    background: #fff;
+    color: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* 操作按钮 - 扁平化设计 */
+.btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-change {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.btn-change:hover {
+    background: #dbeafe;
+}
+
+.btn-logout {
+    background: #fff1f2;
+    color: #ef4444;
+    margin-top: 15px;
+}
+
+.btn-logout:hover {
+    background: #fee2e2;
+}

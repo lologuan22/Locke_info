@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>洛克王国wiki - 列表页</title>
+    <link rel="stylesheet" href="./css/header-styles.css" />
+    <link rel="stylesheet" href="./css/auth-modal.css">
+    <link rel="stylesheet" href="./css/user-panel.css">
+    <link rel="stylesheet" href="./css/home.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+    <div id="app" class="main" v-cloak>
+        <common-header @login-success="onLoginSuccess"></common-header>
+
+        <div class="map">
+            <div class="map-header">
+                <div class="search-bar">
+                    <input type="text" v-model="filter.name" placeholder="搜索精灵名称" @keyup.enter="fetchList" />
+                    <select v-model="filter.type">
+                        <option value="">全部属性</option>
+                        <option v-for="t in types" :key="t" :value="t">{{t}}</option>
+                    </select>
+                    <button @click="fetchList" class="btn-search">查询</button>
+                </div>
+                <a href="./world-map.html" class="map-link">
+                    <img id="map_in_bt" src="./img/imgmap.png" alt="图鉴入口" />
+                </a>
+
+            </div>
+
+            <transition-group name="list" tag="div" class="scroll-container">
+
+                <div v-for="pet in allPets" :key="pet.id" class="pet-card">
+                    <div @click="goToDetail(pet.id)">
+                        <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
+                        <div class="pet-info">
+                            <p>{{pet.name}}</p>
+                            <small>{{pet.type1}}</small>
+                        </div>
+                    </div>
+                    <button @click.stop="handleAddToBackpack(pet)" :disabled="pet.isAdding || pet.isOwned"
+                        :class="['btn-add', { 'is-owned': pet.isOwned }]">
+                        {{ pet.isAdding ? '处理中...' : (pet.isOwned ? '已收藏' : '加入背包') }}
+                    </button>
+                </div>
+
+            </transition-group>
+        </div>
+
+        <div class="map backpack-map">
+            <div class="map-header">
+                <div class="search-bar">
+                    <input type="text" v-model="backpackFilter.name" placeholder="搜索已收藏精灵名称"
+                        @keyup.enter="fetchBackpack" />
+                    <select v-model="backpackFilter.type">
+                        <option value="">全部属性</option>
+                        <option v-for="t in types" :key="t" :value="t">{{t}}</option>
+                    </select>
+                    <button @click="fetchBackpack" class="btn-search">查询</button>
+                    <button @click="handleClearClick" :class="['btn-clear', { 'is-confirming': isConfirming }]"
+                        v-if="backpackPets.length">
+                        {{ isConfirming ? '确定清空？' : '清空收藏' }}
+                    </button>
+                </div>
+
+                <a href="./my-collection.html" class="map-link">
+                    <img id="map_in_bt" src="./img/mylike.png" alt="我的收藏" />
+                </a>
+            </div>
+
+            <div v-if="!isLoggedIn" class="empty-msg">请先登录查看收藏</div>
+
+            <transition-group name="list" tag="div" class="scroll-container">
+
+
+                <div v-for="pet in backpackPets" :key="pet.id" class="pet-card">
+                    <div @click="goToDetail(pet.id)">
+                        <img :src="formatImg(pet.imageUrl)" :alt="pet.name">
+                        <div class="pet-info">
+                            <p>{{pet.name}}</p>
+                            <small>{{pet.type1}}</small>
+                        </div>
+                    </div>
+                    <button @click.stop="handleRemoveFromBackpack(pet.id)" class="btn-clear">移除</button>
+                </div>
+            </transition-group>
+        </div>
+    </div>
+
+    <script type="module">
+        import CommonHeader from './js/components/header/HeaderContainer.js';
+        import { getImageUrl } from './js/config.js';
+        import {
+            getPokemonList,
+            getUserBackpack,
+            removeFromBackpack,
+            getCurrentUserInfo,
+            addToBackpack
+        } from './js/api/index.js';
+        const handleApi = async (apiPromise) => {
+            try {
+                const res = await apiPromise;
+                if (res.code === 200) {
+                    // 只有成功才返回数据主体
+                    return res.data;
+                } else {
+                    // 业务失败，统一弹窗
+                    alert(res.message || '操作失败');
+                    return null;
+                }
+            } catch (err) {
+                console.error("网络请求异常:", err);
+                return null;
+            }
+        };
+
+        const app = Vue.createApp({
+            data() {
+                return {
+                    types: ['水', '火', '草', '光', '翼', '电', '冰', '武', '土', '虫', '幽灵', '恶魔', '龙', '毒'],
+                    allPets: [],
+                    backpackPets: [],
+                    isLoggedIn: false,
+                    isConfirming: false,
+                    confirmTimer: null,
+                    filter: {
+                        name: '',
+                        type: '',
+                        current: 1,
+                        size: 20
+                    },
+                    backpackFilter: {
+                        name: '',
+                        type: ''
+                    }
+                }
+            },
+            async created() {
+                await this.checkLoginStatus();
+                await this.fetchBackpack();
+                this.fetchList();
+            },
+            methods: {
+                formatImg(url) {
+                    return getImageUrl(url);
+                },
+                async onLoginSuccess() {
+                    this.isLoggedIn = true;
+                    await this.fetchBackpack(); // 重新拉取收藏列表
+                    this.fetchList();           // 刷新主列表以同步“已收藏”按钮状态
+                },
+                async checkLoginStatus() {
+                    const userInfo = await handleApi(getCurrentUserInfo());
+                    this.isLoggedIn = !!userInfo;
+                },
+
+                async handleAddToBackpack(pet) {
+                    if (!this.isLoggedIn) return alert('请先登录');
+                    pet.isAdding = true;
+                    const data = await handleApi(addToBackpack(pet.id));
+                    if (data !== null) {
+                        pet.isOwned = true;
+                        await this.fetchBackpack();
+                    }
+                    pet.isAdding = false;
+                },
+
+                async handleRemoveFromBackpack(id) {
+                    const data = await handleApi(removeFromBackpack(id));
+                    if (data !== null) {
+                        this.backpackPets = this.backpackPets.filter(p => p.id !== id);
+                        const petInList = this.allPets.find(p => p.id === id);
+                        if (petInList) petInList.isOwned = false;
+                    }
+                },
+
+                async fetchList() {
+                    const data = await handleApi(getPokemonList(this.filter));
+                    if (data) {
+                        const list = data.records || data;
+                        this.allPets = list.map(pet => ({
+                            ...pet,
+                            isOwned: this.backpackPets.some(b => b.id === pet.id),
+                            isAdding: false
+                        }));
+                    }
+                },
+
+                async fetchBackpack() {
+                    if (!this.isLoggedIn) return;
+                    const data = await handleApi(getUserBackpack(this.backpackFilter));
+                    if (data) {
+                        this.backpackPets = data.records || data;
+                    }
+                },
+                handleClearClick() {
+                    if (!this.isConfirming) {
+                        // 第一次点击：进入确认状态
+                        this.isConfirming = true;
+                        // 3秒后如果不点，自动重置状态，防止误触
+                        this.confirmTimer = setTimeout(() => {
+                            this.isConfirming = false;
+                        }, 3000);
+                    } else {
+                        // 第二次点击：真正执行
+                        this.executeClear();
+                        this.isConfirming = false;
+                        clearTimeout(this.confirmTimer);
+                    }
+                },
+                async executeClear() {
+                    const promises = this.backpackPets.map(pet => handleApi(removeFromBackpack(pet.id)));
+                    await Promise.all(promises);
+                    this.backpackPets = [];
+                    this.allPets.forEach(p => p.isOwned = false);
+                },
+
+                async clearBackpack() {
+                    if (!this.backpackPets.length) return;
+                    if (!confirm('确定要移除当前列表下的所有收藏吗？')) return;
+
+                    try {
+                        const promises = this.backpackPets.map(pet => handleApi(removeFromBackpack(pet.id)));
+                        await Promise.all(promises);
+
+                        this.backpackPets = [];
+                        this.allPets.forEach(p => p.isOwned = false);
+
+                        this.fetchBackpack();
+                    } catch (err) {
+                        console.error("清空过程发生异常", err);
+                    }
+                },
+
+                goToDetail(id) {
+                    globalThis.location.href = `./details.html?id=${id}`;
+                }
+            }
+
+        });
+
+        app.component('common-header', CommonHeader);
+        app.mount('#app');
+    </script>
+</body>
+
+</html>

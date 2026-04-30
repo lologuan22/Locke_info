@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <title>宠物详情 - 洛克王国图鉴</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+  <link rel="stylesheet" href="./css/header-styles.css">
+  <link rel="stylesheet" href="./css/auth-modal.css">
+  <link rel="stylesheet" href="./css/user-panel.css">
+  <link rel="stylesheet" href="./css/home.css">
+  <link rel="stylesheet" href="./css/detail.css" />
+</head>
+
+<body>
+  <div id="app" v-cloak>
+    <common-header></common-header>
+
+    <div class="container">
+      <div v-if="loading" class="loading">加载中...</div>
+
+      <template v-else-if="pet">
+        <div class="info-card">
+          <h2>{{ pet.name }} (ID: {{ pet.id }})</h2>
+          <div class="pet-display-container">
+            <div class="pet-photo">
+              <img :src="formatImg(pet.imageUrl)" :alt="pet.name" class="pet-img">
+            </div>
+            <div class="stat-bars">
+              <div v-for="(label, index) in ['精力', '攻击', '防御', '魔攻', '魔抗', '速度']" :key="index" class="stat-item">
+                <span class="stat-label">{{ label }}</span>
+                <div class="bar-container">
+                  <div class="bar-fill" :style="{ '--target-width': (pet.radarData[index]) + '%' }"></div>
+                </div>
+                <span class="stat-value">{{ pet.radarData[index] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card" id="radarChart" ref="radarChartRef"></div>
+
+        <div class="description-section">
+          <h3>宠物简介</h3>
+          <p class="pet-intro">{{ pet.description || '暂无该宠物的背景描述。' }}</p>
+        </div>
+
+        <div class="suggestion-card">
+          <h3>养成建议</h3>
+          <div class="suggestion-content">
+            <div class="suggestion-item">
+              <strong>推荐性格：</strong>
+              <span>{{ recommendedNature }}</span>
+            </div>
+            <div class="suggestion-item">
+              <strong>定位分析：</strong>
+              <span>{{ petRole }}</span>
+            </div>
+            <div class="suggestion-item">
+              <strong>培养说明：</strong>
+              <p>{{ dynamicAdvice }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card compare-selector-section">
+          <h3>寻找对手进行对比</h3>
+
+          <div class="search-bar" style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <input type="text" v-model="compareFilter.name" placeholder="搜索精灵名称" @keyup.enter="fetchCompareList"
+              style="flex: 1; padding: 8px 15px; border-radius: 20px; border: 1px solid #ddd;">
+            <button @click="fetchCompareList" class="btn-search"
+              style="padding: 8px 25px; border-radius: 20px; background: #1890ff; color: white; border: none; cursor: pointer;">搜索</button>
+          </div>
+
+          <div class="scroll-container"
+            style="display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; min-height: 150px;">
+            <div v-for="target in compareList" :key="target.id"
+              :class="['pet-card', { 'selected-target': selectedCompareId === target.id }]"
+              @click="selectedCompareId = target.id"
+              style="flex: 0 0 120px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; padding: 10px; text-align: center; background: #f9f9f9; border-radius: 12px;">
+              <img :src="formatImg(target.imageUrl)" style="width: 80px; height: 80px; object-fit: contain;">
+              <p style="font-size: 14px; margin: 5px 0;">{{ target.name }}</p>
+              <small style="color: #666;">{{ target.type1 }}</small>
+            </div>
+            <div v-if="compareList.length === 0"
+              style="color: #999; width: 100%; text-align: center; padding-top: 50px;">
+              输入名称搜索对比目标...
+            </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 20px;">
+            <button @click="goCompare" :disabled="!selectedCompareId" :style="{ opacity: selectedCompareId ? 1 : 0.5 }"
+              style="background: linear-gradient(45deg, #ff4d4f, #ff7875); color: white; border: none; padding: 10px 40px; border-radius: 25px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255,77,79,0.3);">
+              开始对比
+            </button>
+          </div>
+        </div>
+
+        <div class="skill-section">
+          <h3>技能列表</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>技能名</th>
+                <th>属性</th>
+                <th>威力</th>
+                <th>PP</th>
+                <th>描述</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="skill in pet.skills" :key="skill.id">
+                <td>{{ skill.name }}</td>
+                <td>{{ skill.type }}</td>
+                <td>{{ skill.power }}</td>
+                <td>{{ skill.pp }}</td>
+                <td>{{ skill.effect }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <div v-else class="loading">未找到该宠物信息</div>
+    </div>
+  </div>
+
+</body>
+
+
+<script type="module">
+  import { usePetData } from './js/hooks/usePetData.js';
+  import { usePetLogic } from './js/hooks/usePetLogic.js';
+  import { PetChartController } from './js/utils/petChartController.js';
+  import CommonHeader from './js/components/header/HeaderContainer.js';
+
+  import { getImageUrl } from './js/config.js';
+
+  const chartCtrl = new PetChartController();
+  const { fetchPetDetail } = usePetData();
+  const { getRecommendedNature, getPetRole, getDynamicAdvice } = usePetLogic();
+
+  const app = Vue.createApp({
+    data() {
+      return {
+        pet: null,
+        loading: true,
+        // --- 对比功能所需数据 ---
+        compareList: [],
+        selectedCompareId: null,
+        compareFilter: {
+          name: '',
+          current: 1,
+          size: 10
+        }
+      };
+    },
+    computed: {
+      recommendedNature() { return getRecommendedNature(this.pet?.radarData); },
+      petRole() { return getPetRole(this.pet?.radarData); },
+      dynamicAdvice() { return getDynamicAdvice(this.pet?.radarData); }
+    },
+    methods: {
+      formatImg(url) {
+        return getImageUrl(url);
+      },
+      async initPage() {
+        try {
+          this.pet = await fetchPetDetail();
+          this.loading = false;
+
+          if (this.pet && this.pet.radarData) {
+            this.$nextTick(() => {
+              chartCtrl.render(this.$refs.radarChartRef, this.pet.radarData);
+            });
+          }
+
+          // 只有在获取到主宠物信息后，才去加载对比列表
+          await this.fetchCompareList();
+        } catch (err) {
+          console.error('页面初始化失败:', err);
+          this.loading = false;
+        }
+      },
+
+      // --- 注意：这两个方法现在正确地放在了 methods 内部 ---
+      async fetchCompareList() {
+        try {
+          // 这里动态导入 API
+          const { getPokemonList } = await import('./js/api/index.js');
+          const res = await getPokemonList(this.compareFilter);
+
+          if (res && res.code === 200) {
+            const list = res.data.records || res.data;
+            // 过滤掉当前宠物自己
+            this.compareList = list.filter(p => p.id != this.pet?.id);
+          }
+        } catch (err) {
+          console.error("加载对比列表失败:", err);
+        }
+      },
+
+      goCompare() {
+        if (!this.selectedCompareId || !this.pet) return;
+        window.location.href = `./compare.html?id1=${this.pet.id}&id2=${this.selectedCompareId}`;
+      }
+    },
+    mounted() {
+      this.initPage();
+      this.handleResize = () => chartCtrl.resize();
+      window.addEventListener('resize', this.handleResize);
+    },
+    unmounted() {
+      window.removeEventListener('resize', this.handleResize);
+    }
+  });
+
+  app.component('common-header', CommonHeader);
+  app.mount('#app');
+</script>
+
+</html>
