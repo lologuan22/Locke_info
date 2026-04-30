@@ -1,0 +1,45 @@
+/* 顶部导航容器 */
+.hud {
+    width: 100%;
+    background: #d9f29a;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 0;
+    z-index: 100;
+}
+
+.top {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px 20px;
+}
+
+.topp {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.log {
+    cursor: pointer;
+    color: #3498DB;
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid #3498DB;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.log:hover {
+    background: #3498DB;
+    color: white;
+}

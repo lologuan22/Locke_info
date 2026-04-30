@@ -1,0 +1,134 @@
+/* 容器设计 */
+.collection-page {
+    background: #f0f2f5 url('../img/bg-pattern.png'); /* 建议用淡雅的纹理 */
+    min-height: 100vh;
+}
+
+/* 顶部英雄区：大气感 */
+.collection-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.stat-item .value {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* 属性标签筛选 */
+.filter-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.type-tag {
+    padding: 6px 15px;
+    margin-right: 8px;
+    border: 1px solid #eee;
+    border-radius: 20px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.type-tag.active {
+    background: #764ba2;
+    color: white;
+    border-color: #764ba2;
+}
+
+/* 差异化大卡片设计 */
+.pet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    padding-bottom: 50px;
+}
+
+.collection-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.collection-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.card-inner {
+    cursor: pointer;
+    padding: 20px;
+    text-align: center;
+}
+
+.image-wrapper {
+    background: radial-gradient(circle, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.collection-card img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+.type-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 12px;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* 按钮差异化：弱化移除，强化视觉 */
+.card-actions {
+    border-top: 1px solid #f5f5f5;
+    padding: 10px;
+}
+
+.btn-release {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-release:hover {
+    color: #ff4d4f;
+}
+
+/* 动画效果 */
+.grid-enter-active, .grid-leave-active {
+    transition: all 0.5s ease;
+}
+.grid-enter-from, .grid-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+}
