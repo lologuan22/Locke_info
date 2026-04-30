@@ -1,66 +1,126 @@
-## 表结构说明
-```sql/
-├── 01_schema/              # 数据库结构文件
-│   ├── 001_database_create.sql      # 创建数据库
-│   ├── 002_users_table.sql          # 用户表
-│   ├── 003_pokemons_table.sql       # 宠物基础表
-│   ├── 004_user_pokemons_table.sql  # 用户背包表
-│   └── 005_type_effectiveness.sql   # 属性相克表
-│   
-├── 02_data/                # 测试数据文件
-│   ├── 001_users_data.sql           # 用户数据
-│   ├── 002_pokemons_data.sql        # 宠物基础数据
-│   ├── 003_type_effectiveness_data.sql  # 属性相克数据
-│   └── 004_user_pokemons_data.sql   # 用户宠物数据
-│   
-├── 03_procedures/          # 存储过程和函数
-│   └── 001_update_pokemon_stats.sql  # 更新宠物数值存储过程
-│   
-├── 04_triggers/            # 触发器
-│   └── 001_user_pokemon_trigger.sql  # 宠物进度更新触发器
-│   
-├── 05_views/               # 视图
-│   └── 001_user_pokemon_details.sql  # 用户宠物详情视图
-│   
-├── install.sh              # 一键安装脚本
-└── README.md               # 数据库总体说明
+# Locke_info 数据库文档
+
+## 概述
+
+Locke_info 项目是一个基于宝可梦主题的Web应用，后端使用Spring Boot框架，前端使用HTML/CSS/JavaScript。本数据库文档描述了项目的数据库结构和数据初始化脚本。
+
+数据库名称：`pokedex_db`
+
+## 数据库表结构
+
+### 1. 用户表 (users)
+存储用户信息，包括登录凭据、个人资料等。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | INT | 主键，自增 |
+| username | VARCHAR(50) | 用户名，唯一 |
+| password | VARCHAR(255) | 密码（加密存储） |
+| email | VARCHAR(100) | 邮箱，唯一 |
+| nickname | VARCHAR(50) | 昵称 |
+| avatar_url | VARCHAR(255) | 头像URL |
+| created_at | TIMESTAMP | 创建时间 |
+| updated_at | TIMESTAMP | 更新时间 |
+| last_login | TIMESTAMP | 最后登录时间 |
+| status | TINYINT | 状态（0-禁用，1-正常） |
+
+### 2. 宝可梦基础信息表 (pokemon)
+存储宝可梦的基本信息。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | INT | 主键，自增 |
+| number | INT | 宝可梦编号，唯一 |
+| name | VARCHAR(50) | 宝可梦名称 |
+| type1 | VARCHAR(20) | 主属性/系别 |
+| height | DECIMAL(5,2) | 身高(m) |
+| weight | DECIMAL(5,2) | 体重(kg) |
+| description | TEXT | 宝可梦简介 |
+| image_url | VARCHAR(255) | 图片路径 |
+| is_legendary | TINYINT(1) | 是否为神兽 |
+| is_rare | TINYINT(1) | 是否稀有 |
+
+### 3. 宝可梦种族值表 (pokemon_stats)
+存储宝可梦的种族值，与pokemon表一对一关系。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| pokemon_id | INT | 外键，关联pokemon.id |
+| hp | INT | 生命值 |
+| atk | INT | 攻击 |
+| def | INT | 防御 |
+| sp_atk | INT | 特殊攻击 |
+| sp_def | INT | 特殊防御 |
+| speed | INT | 速度 |
+
+### 4. 技能信息表 (skill)
+存储宝可梦技能信息。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | INT | 主键，自增 |
+| name | VARCHAR(50) | 技能名称 |
+| type | VARCHAR(20) | 技能属性 |
+| category | VARCHAR(20) | 类型（物理/变化/魔法） |
+| power | INT | 威力 |
+| pp | INT | PP值 |
+| effect | VARCHAR(255) | 技能效果描述 |
+
+### 5. 用户背包表 (user_pokemon)
+存储用户拥有的宝可梦，多对多关系。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | INT | 主键，自增 |
+| user_id | INT | 外键，关联users.id |
+| pokemon_id | INT | 外键，关联pokemon.id |
+| caught_at | DATETIME | 获得时间 |
+
+### 6. 宝可梦技能关联表 (pokemon_skill_relation)
+存储宝可梦与技能的多对多关系。
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| pokemon_id | INT | 外键，关联pokemon.id |
+| skill_id | INT | 外键，关联skill.id |
+| require_level | INT | 学习所需等级 |
+
+## 数据初始化
+
+### 步骤1：创建数据库和表
+运行 `create_table.sql` 脚本，该脚本将：
+- 创建 `pokedex_db` 数据库
+- 创建所有表结构
+- 设置外键约束和索引
+
+### 步骤2：插入初始数据
+运行 `data.sql` 脚本，该脚本将：
+- 清空所有表数据
+- 插入两个测试用户（admin 和 xiaoluoke）
+- 插入67种宝可梦的基础信息和种族值
+- 插入技能数据（如果有）
+
+## 注意事项
+
+1. **字符集**：数据库使用 `utf8mb4` 字符集，支持中文和特殊字符。
+2. **外键约束**：表间存在外键关系，删除操作会级联。
+3. **索引优化**：在常用查询字段上建立了索引。
+4. **数据完整性**：使用 InnoDB 引擎确保事务安全。
+
+## 相关文件
+
+- `create_table.sql`：数据库表创建脚本
+- `data.sql`：初始数据插入脚本
+
+## 开发环境配置
+
+在 `application.yml` 或 `application-local.yml` 中配置数据库连接：
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/pokedex_db
+    username: your_username
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
 ```
-
-### 1. users (用户表)
-存储系统用户信息，包括登录凭证和个人信息。
-
-### 2. pokemons (宠物基础表)
-存储所有宠物的基础信息，包括属性、图片和基础数值。
-
-### 3. user_pokemons (用户背包表)
-存储用户拥有的宠物，包含培养进度和当前数值。
-
-### 4. type_effectiveness (属性相克表)
-存储属性相克关系，用于属性计算器功能。
-
-## 测试数据
-
-### 用户账户
-- 用户名: admin, 密码: 123456 (管理员)
-- 用户名: user1, 密码: 123456 (普通用户)
-- 用户名: user2, 密码: 123456 (普通用户)
-
-### 宠物数据
-包含20个经典宠物，涵盖各种属性类型。
-
-## 自动化功能
-
-### 触发器
-- `after_user_pokemon_update`: 当宠物培养进度更新时，自动重新计算当前数值
-
-### 存储过程
-- `update_user_pokemon_stats`: 更新指定宠物的当前数值
-
-### 视图
-- `user_pokemon_details`: 提供用户宠物的详细信息视图
-
-## 维护说明
-
-1. 定期备份数据库
-2. 生产环境修改密码
-3. 根据需要添加索引优化查询性能
