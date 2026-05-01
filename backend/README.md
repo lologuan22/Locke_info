@@ -22,12 +22,14 @@
 ## 安装步骤
 
 1. 克隆项目到本地：
+
    ```bash
    git clone https://github.com/lologuan22/Locke_info.git
    cd Locke_info/backend/locke
    ```
 
 2. 安装依赖：
+
    ```bash
    mvn clean install
    ```
@@ -45,10 +47,13 @@
 
 1. 确保MySQL服务正在运行
 2. 运行应用：
+
    ```bash
    mvn spring-boot:run
    ```
+
    或使用Maven Wrapper：
+
    ```bash
    ./mvnw spring-boot:run  # Linux/Mac
    mvnw.cmd spring-boot:run  # Windows
@@ -81,6 +86,7 @@ spring:
 ### 文件上传配置
 
 默认文件上传路径：
+
 - 通用文件: `D:/locke-uploads/common/`
 - 头像文件: `D:/locke-uploads/avatars/`
 - 访问路径: `/api/images/**`
@@ -88,6 +94,7 @@ spring:
 ### JWT配置
 
 JWT相关配置在 `application.yml` 中：
+
 - `jwt.secret`: JWT签名密钥
 - `jwt.expiration`: Token过期时间（毫秒）
 
@@ -120,6 +127,7 @@ src/main/java/com/newblash/locke/
 ## 测试
 
 运行单元测试：
+
 ```bash
 mvn test
 ```
@@ -147,3 +155,25 @@ mvn clean package
 - JWT密钥在生产环境中应该使用强密钥
 - 默认端口为8080，如需修改请编辑 `application.yml`
 
+## 后端打包
+
+```powershell
+# 删除旧的
+rm -Recurse -Force custom-runtime
+
+# 生成运行时
+jlink --module-path "$env:JAVA_HOME\jmods" `
+  --add-modules java.base,java.desktop,java.instrument,java.naming,java.prefs,java.rmi,java.scripting,java.sql,java.xml,java.management,java.security.sasl,java.security.jgss,java.transaction.xa,jdk.httpserver,jdk.unsupported,jdk.crypto.ec `
+  --output custom-runtime `
+  --strip-debug `
+  --no-man-pages `
+  --no-header-files
+
+
+# 验证运行时
+.\custom-runtime\bin\java -jar target\locke-0.0.1-SNAPSHOT.jar
+
+# 打包
+jpackage --type app-image --dest dist --name "LockeApp" --input target --main-jar locke-0.0.1-SNAPSHOT.jar --main-class org.springframework.boot.loader.launch.JarLauncher --runtime-image custom-runtime --win-console
+
+```
