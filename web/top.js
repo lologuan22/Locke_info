@@ -1,5 +1,6 @@
 import * as api from './js/api/index.js';
 import { login } from './js/api/index.js';
+import { CONFIG } from './js/config.js';
 
 window.addEventListener('pageshow', function () {
     setTimeout(() => {
@@ -10,7 +11,7 @@ window.addEventListener('pageshow', function () {
 });
 
 // ✅ 修复：还原你正确的后端IP（核心！）
-const BASE_URL = 'http://172.17.79.7:8080';
+const BASE_URL = CONFIG.BASE_URL;
 
 // ======================
 // 保持登录状态

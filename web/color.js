@@ -1,6 +1,6 @@
 import * as api from './js/api/index.js';
-
-const BASE_URL = 'http://172.17.79.7:8080';
+import { CONFIG } from './js/config.js';
+const BASE_URL = CONFIG.BASE_URL;
 
 // 颜色工具
 function getBgColor(type) {

@@ -24,6 +24,112 @@
             /* 预留 Header 空间 */
         }
 
+        /* --- 筛选栏美化 --- */
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-header h1 {
+            font-size: 28px;
+            color: #333;
+            margin: 0;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .filter-header h1::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 24px;
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        /* 搜索框与选择框容器 */
+        .search-box {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 输入框与选择框的统一样式 */
+        .search-box input,
+        .search-box select {
+            padding: 10px 18px;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            background: #f8f9fa;
+            font-size: 14px;
+            color: #444;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .search-box input {
+            width: 260px;
+        }
+
+        .search-box input:focus,
+        .search-box select:focus {
+            background: #fff;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2);
+        }
+
+        /* --- 宠物卡片细节优化 --- */
+        .pet-card-big {
+            cursor: pointer;
+            background: #fff;
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 悬浮效果：卡片整体上浮 */
+        .pet-card-big:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 属性标签（Type Tag）美化 */
+        .pet-type-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #eee;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* 收藏按钮强化：模拟游戏中的 UI 质感 */
+        .btn-fav {
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(4px);
+        }
+
+        .btn-fav:hover {
+            background: #fff !important;
+            transform: scale(1.15) rotate(5deg);
+        }
+
+        /* 宠物名称字体 */
+        .pet-info-big h3 {
+            margin: 10px 0 5px;
+            font-size: 18px;
+            color: #2d3436;
+        }
+
         /* 1. 强化容器限制 */
         .wiki-container {
             max-width: 1400px;
@@ -159,6 +265,33 @@
             /* 建议与 wiki-container 对齐 */
             margin: 0 auto;
             padding: 0 20px;
+        }
+
+        /* --- 列表动效 (Vue Transition Group) --- */
+
+        /* 1. 元素进入和离开的过程 */
+        .list-enter-active,
+        .list-leave-active {
+            transition: all 0.6s cubic-bezier(0.55, 0, 0.1, 1);
+        }
+
+        /* 2. 元素进入前和离开后的状态 */
+        .list-enter-from,
+        .list-leave-to {
+            opacity: 0;
+            transform: scale(0.6) translateY(30px);
+        }
+
+        /* 3. 元素改变位置时的平滑移动 (必须添加) */
+        .list-move {
+            transition: transform 0.6s cubic-bezier(0.55, 0, 0.1, 1);
+        }
+
+        /* 4. 关键：确保离开的元素不占位，让移动动画顺滑 */
+        .list-leave-active {
+            position: absolute;
+            /* 配合 grid 布局，可能需要限制离开时的宽度 */
+            width: var(--pet-card-size);
         }
     </style>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>

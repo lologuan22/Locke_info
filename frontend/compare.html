@@ -29,6 +29,36 @@
             perspective: 1000px;
         }
 
+
+
+        .compare-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 修改后的图片样式 */
+        .compare-card img {
+            /* 核心约束：限制最大宽度和高度 */
+            max-width: 200px;
+            /* 你可以根据需要调整这个数值 */
+            max-height: 200px;
+            width: auto;
+            /* 保持比例 */
+            height: auto;
+            /* 保持比例 */
+
+            /* 布局优化 */
+            display: block;
+            margin: 0 auto 15px;
+            /* 居中并保留底部间距 */
+
+            /* 原有的滤镜 */
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+
+            /* 防止图片在容器窄时溢出 */
+            object-fit: contain;
+        }
+
+        /* 确保卡片本身有良好的对齐 */
         .compare-card {
             flex: 1;
             background: rgba(255, 255, 255, 0.8);
@@ -38,15 +68,13 @@
             border-radius: 24px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease;
-        }
 
-        .compare-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .compare-card img {
-            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
-            margin-bottom: 15px;
+            /* 增加：让卡片内容垂直居中 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .vs-badge {
@@ -148,12 +176,12 @@
             <template v-else-if="petA && petB">
                 <div class="compare-container" style="width: 100%;">
                     <div class="compare-card">
-                         <img :src="formatImg(petA.imageUrl)" :alt="petA.name">
+                        <img :src="formatImg(petA.imageUrl)" :alt="petA.name">
                         <h4>{{ petA.name }}</h4>
                     </div>
                     <div class="vs-badge">VS</div>
                     <div class="compare-card">
-                           <img :src="formatImg(petB.imageUrl)" :alt="petB.name">
+                        <img :src="formatImg(petB.imageUrl)" :alt="petB.name">
                         <h4>{{ petB.name }}</h4>
                     </div>
                 </div>

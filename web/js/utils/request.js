@@ -1,10 +1,10 @@
 import axios from 'https://cdn.jsdelivr.net/npm/axios@1.6.0/+esm';
 
-
+import { CONFIG } from '../config.js';
 
 const service = axios.create({
-  baseURL: 'http://172.17.79.7:8080', // 后端地址
-  timeout: 10000 // 超时时间
+  baseURL: CONFIG.BASE_URL,
+  timeout: CONFIG.TIMEOUT
 });
 
 // 请求拦截器：自动注入 Token

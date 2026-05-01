@@ -80,7 +80,7 @@
             style="display: flex; overflow-x: auto; gap: 15px; padding-bottom: 15px; min-height: 150px;">
             <div v-for="target in compareList" :key="target.id"
               :class="['pet-card', { 'selected-target': selectedCompareId === target.id }]"
-              @click="selectedCompareId = target.id"
+              @click="selectedCompareId = (selectedCompareId === target.id ? null : target.id)"
               style="flex: 0 0 120px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; padding: 10px; text-align: center; background: #f9f9f9; border-radius: 12px;">
               <img :src="formatImg(target.imageUrl)" style="width: 80px; height: 80px; object-fit: contain;">
               <p style="font-size: 14px; margin: 5px 0;">{{ target.name }}</p>
@@ -155,7 +155,7 @@
         compareFilter: {
           name: '',
           current: 1,
-          size: 10
+          size: 50
         }
       };
     },
