@@ -1,6 +1,6 @@
 export const CONFIG = {
      
-    BASE_URL: 'http://5150df83.r25.cpolar.top',
+    BASE_URL: 'https://boot.ash-xiong.de5.net',
     TIMEOUT: 10000
 };
 
