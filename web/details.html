@@ -69,13 +69,6 @@
             background-color: #f8f9fa;
         }
 
-        .suggestion {
-            background: #e6f7ff;
-            padding: 15px;
-            border-left: 4px solid #1890ff;
-            margin-top: 20px;
-        }
-
         .loading {
             text-align: center;
             width: 100%;
@@ -141,6 +134,19 @@
             padding-top: 15px;
             border-top: 1px solid #eee;
         }
+
+        /* 修复：动态养成建议模块样式，支持自动换行 */
+        .dynamic-suggestion {
+            background: #fff7e6;
+            padding: 15px;
+            border-left: 4px solid #fa8c16;
+            margin-top: 15px;
+            border-radius: 0 8px 8px 0;
+            /* 新增换行属性 */
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.6;
+        }
     </style>
 </head>
 
@@ -167,7 +173,6 @@
             padding: '10px', 
             borderRadius: '8px' 
           }">
-                        <!-- ✅ 修复：使用Vue实例的baseUrl变量 -->
                         <img :src="baseUrl + pet.imageUrl" class="pet-img" :alt="pet.name">
                         <p><strong>系别：</strong> {{pet.type1}}</p>
                         <p><strong>身高：</strong> {{pet.height}} m </p>
@@ -186,8 +191,10 @@
                 </div>
 
                 <p class="description"><strong>简介：</strong> {{pet.description}}</p>
-                <div class="suggestion">
-                    <strong>养成建议：</strong> {{pet.suggestion}}
+
+                <!-- 动态智能养成建议（根据最低属性生成） -->
+                <div class="dynamic-suggestion">
+                    <strong>💡 智能养成建议：</strong> {{ getLowestStatSuggestion(pet.radarData) }}
                 </div>
             </div>
 
@@ -233,7 +240,6 @@
                 pet: null,
                 loading: true,
                 myChart: null,
-                // ✅ 修复：将配置挂载到Vue实例，模板可访问
                 baseUrl: CONFIG.BASE_URL
             },
             mounted() {
@@ -248,9 +254,7 @@
                     return urlParams.get(name);
                 },
 
-                // ======================
-                // ✅ 浅色柔和背景（页面背景用）
-                // ======================
+                // 页面背景颜色
                 getTypePageBgColor(type) {
                     const colorMap = {
                         '水': '#e6f7ff',
@@ -272,9 +276,7 @@
                     return colorMap[type] || '#f5f7fa';
                 },
 
-                // ======================
-                // ✅ 卡片背景（稍深一点）
-                // ======================
+                // 卡片背景颜色
                 getTypeLightColor(type) {
                     const colorMap = {
                         '水': '#d1eaff',
@@ -296,11 +298,30 @@
                     return colorMap[type] || '#f0f0f0';
                 },
 
-                // ======================
-                // ✅ 设置整个页面背景
-                // ======================
+                // 设置页面背景
                 setBodyBackground(type) {
                     document.body.style.backgroundColor = this.getTypePageBgColor(type);
+                },
+
+                // ✅ 核心修复：根据最低属性生成养成建议
+                getLowestStatSuggestion(radarData) {
+                    if (!radarData || radarData.length !== 6) return "暂无养成建议";
+
+                    const statNames = ['精力', '攻击', '防御', '魔攻', '魔抗', '速度'];
+                    const minValue = Math.min(...radarData);
+                    const minIndex = radarData.indexOf(minValue);
+                    const lowestStat = statNames[minIndex];
+
+                    const advice = {
+                        '精力': `精力种族值最低(${minValue})，推荐加精力性格，优先加点精力努力值，提升生存能力`,
+                        '攻击': `攻击种族值最低(${minValue})，推荐加攻击性格，优先加点攻击努力值，强化物理输出`,
+                        '防御': `防御种族值最低(${minValue})，推荐加防御性格，优先加点防御努力值，提升物理坦度`,
+                        '魔攻': `魔攻种族值最低(${minValue})，推荐加魔攻性格，优先加点魔攻努力值，强化法术输出`,
+                        '魔抗': `魔抗种族值最低(${minValue})，推荐加魔抗性格，优先加点魔抗努力值，提升法术坦度`,
+                        '速度': `速度种族值最低(${minValue})，推荐加速度性格，优先加点速度努力值，保证先手出招`
+                    };
+
+                    return advice[lowestStat];
                 },
 
                 async fetchData() {
@@ -309,10 +330,7 @@
                         const res = await getPokemonDetail(id);
                         if (res.code === 200) {
                             this.pet = res.data;
-
-                            // ✅ 加载完成后自动改页面背景
                             this.setBodyBackground(this.pet.type1);
-
                             setTimeout(() => {
                                 this.initChart(this.pet.radarData);
                             }, 100);
@@ -329,7 +347,6 @@
                     if (!chartDom || !radarData) return;
 
                     this.myChart = echarts.init(chartDom);
-
                     const option = {
                         title: { text: '能力分布', left: 'center' },
                         tooltip: {},
