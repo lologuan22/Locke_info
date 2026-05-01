@@ -1,5 +1,5 @@
 export const CONFIG = {
      
-    BASE_URL: 'http://172.17.68.132:8080',
+    BASE_URL: 'http://5150df83.r25.cpolar.top',
     TIMEOUT: 10000
 };
