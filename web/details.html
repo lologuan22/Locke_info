@@ -167,7 +167,8 @@
             padding: '10px', 
             borderRadius: '8px' 
           }">
-                        <img :src="'http://172.17.79.7:8080' + pet.imageUrl" class="pet-img" :alt="pet.name">
+                        <!-- ✅ 修复：使用Vue实例的baseUrl变量 -->
+                        <img :src="baseUrl + pet.imageUrl" class="pet-img" :alt="pet.name">
                         <p><strong>系别：</strong> {{pet.type1}}</p>
                         <p><strong>身高：</strong> {{pet.height}} m </p>
                         <p><strong>体重：</strong> {{pet.weight}} kg</p>
@@ -223,6 +224,7 @@
     </div>
 
     <script type="module">
+        import { CONFIG } from './js/config.js';
         import { getPokemonDetail } from './js/api/index.js';
 
         new Vue({
@@ -230,7 +232,9 @@
             data: {
                 pet: null,
                 loading: true,
-                myChart: null
+                myChart: null,
+                // ✅ 修复：将配置挂载到Vue实例，模板可访问
+                baseUrl: CONFIG.BASE_URL
             },
             mounted() {
                 this.fetchData();
