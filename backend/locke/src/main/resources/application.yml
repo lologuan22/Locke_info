@@ -44,7 +44,5 @@ logging:
     name: startup.log
 
 file:
-  upload-path: D:/locke-uploads/common/
-  avatar-path: D:/locke-uploads/avatars/
   access-path: /api/images/**
   avatar-access-path: /api/avatars/**
