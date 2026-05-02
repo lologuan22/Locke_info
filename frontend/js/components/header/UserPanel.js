@@ -17,7 +17,13 @@ export default {
                 <input type="text" v-model="newNickname" :placeholder="userInfo.nickname || '设置新昵称'">
                 <button @click="updateNick">保存</button>
             </div>
-            <input type="file" ref="fileInput" style="display:none" @change="upload">
+              <input 
+                type="file" 
+                ref="fileInput" 
+                style="display:none" 
+                accept="image/png, image/jpeg, image/gif, image/webp" 
+                @change="upload"
+              >
             <button class="btn btn-change" @click="$refs.fileInput.click()">更换头像</button>
             <button class="btn btn-logout" @click="logout">退出登录</button>
         </div>
@@ -48,43 +54,57 @@ export default {
       document.removeEventListener("click", handleClickOutside);
     });
 
-    // 1. 更新头像逻辑
-    // UserPanel.js 内部的 upload 函数优化
     const upload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
+      const allowTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+      const maxSize = 2 * 1024 * 1024; // 2MB
+
+      // 校验类型
+      if (!allowTypes.includes(file.type)) {
+        alert("请上传图片文件 (jpg, png, gif, webp)");
+        e.target.value = "";
+        return;
+      }
+
+      // 校验大小
+      if (file.size > maxSize) {
+        alert("图片大小不能超过 2MB");
+        e.target.value = "";
+        return;
+      }
 
       try {
         const fd = new FormData();
         fd.append("file", file);
 
-        // 1. 上传文件
+        // 2. 只有校验通过了，才调用接口上传
         const res = await api.uploadAvatar(fd);
 
-        // 业务错误拦截：如果后端返回 code 不是 200
         if (res.code !== 200) {
           throw new Error(res.message || "服务器文件上传失败");
         }
 
         const newAvatarPath = res.data;
 
-        // 2. 更新用户信息
+        // 3. 更新用户信息
         const updateRes = await api.updateProfile({
           avatarUrl: newAvatarPath,
         });
 
         if (updateRes.code === 200) {
-          // 成功提示
           emit("update", updateRes.data);
           alert("头像更新成功！");
         } else {
-          // 这里的 else 也要处理：虽然请求通了，但业务逻辑没成功
           throw new Error(updateRes.message || "用户信息更新失败");
         }
       } catch (err) {
-        // 3. 失败提示：统一捕获所有错误（网络错误、404、500、业务 Throw 的 Error）
         console.error("头像上传过程出错:", err);
         alert("头像更新失败：" + (err.message || "未知错误"));
+      } finally {
+        // 无论成功失败，建议清空 input，防止连续选同一个文件不触发 change 事件
+        e.target.value = "";
       }
     };
 
