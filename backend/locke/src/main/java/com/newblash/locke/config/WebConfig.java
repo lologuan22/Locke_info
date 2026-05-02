@@ -44,7 +44,7 @@ public class WebConfig implements WebMvcConfigurer {
          * 当强缓存过期或用户刷新时，服务器校验文件指纹，若无变化则返回 304，不传输文件体。
          */
         @Bean
-        public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
+        ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
                 return new ShallowEtagHeaderFilter();
         }
 }

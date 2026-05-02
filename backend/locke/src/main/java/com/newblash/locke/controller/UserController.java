@@ -39,12 +39,8 @@ public class UserController {
     })
     @PostMapping("/login")
     public Result<LoginVO> login(@RequestBody LoginDTO loginDTO) {
-        try {
-            LoginVO loginVO = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
-            return Result.success(loginVO);
-        } catch (RuntimeException e) {
-            return Result.error(e.getMessage());
-        }
+        LoginVO loginVO = userService.login(loginDTO.getUsername(), loginDTO.getPassword());
+        return Result.success(loginVO);
     }
 
     @Operation(summary = "用户注册", description = "创建新用户账号")
@@ -65,7 +61,7 @@ public class UserController {
     @Operation(summary = "退出登录")
     @PostMapping("/logout")
     public Result<String> logout() {
-        // 逻辑：使当前 Token 失效
+        // 逻辑：前端删除 Token 即可，后端不需要做额外处理
         return Result.success("已成功退出");
     }
 

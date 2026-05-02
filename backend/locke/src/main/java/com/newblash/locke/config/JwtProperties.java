@@ -8,6 +8,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
+
+    /**
+     * 用于签名和验证令牌的 JWT 密钥
+     */
     private String secret;
-    private Long expiration;
+
+    /**
+     * 令牌过期时间，单位为秒
+     */
+    private long expiration;
 }

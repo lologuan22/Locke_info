@@ -23,5 +23,8 @@ public interface UserService {
      */
     User getCurrentUser();
 
+    /**
+     * 更新用户资料
+     */
     User updateUserProfile(User user);
 }

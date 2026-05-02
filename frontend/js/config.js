@@ -1,6 +1,6 @@
 export const CONFIG = {
      
-    BASE_URL: 'https://boot.ash-xiong.de5.net',
+    BASE_URL: 'https://project.ash-xiong.de5.net',
     TIMEOUT: 10000
 };
 

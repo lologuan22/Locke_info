@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI lockeOpenAPI() {
+     OpenAPI lockeOpenAPI() {
         return new OpenAPI()
                 // 1. 文档基本信息配置
                 .info(new Info()

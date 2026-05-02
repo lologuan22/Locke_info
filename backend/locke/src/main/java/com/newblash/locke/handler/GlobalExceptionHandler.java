@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     /**
-     * 捕获 Spring Validation 校验异常 (MethodArgumentNotValidException)
+     * 捕获 Spring Validation 校验异常
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Result<String> handleValidationException(MethodArgumentNotValidException ex) {

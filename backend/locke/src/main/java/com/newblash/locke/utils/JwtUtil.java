@@ -12,6 +12,7 @@ import com.newblash.locke.config.JwtProperties;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import io.jsonwebtoken.security.WeakKeyException;
 
 @Component
 @AllArgsConstructor
@@ -19,8 +20,11 @@ public class JwtUtil {
     JwtProperties jwtProperties;
 
     private SecretKey getSigningKey() {
-
-        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        String secret = jwtProperties.getSecret();
+        if (secret == null || secret.length() < 32) { // HS256 算法要求 key 至少 256 bit
+            throw new WeakKeyException("JWT 密钥长度不足或未配置");
+        }
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(Integer userId, String username) {
@@ -39,15 +43,6 @@ public class JwtUtil {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            parseToken(token);
-            return true;
-        } catch (Exception _) {
-            return false;
-        }
     }
 
     public Integer getUserIdFromToken(String token) {
