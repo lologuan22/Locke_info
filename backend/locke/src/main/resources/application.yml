@@ -36,7 +36,6 @@ springdoc:
   packages-to-scan: com.newblash.locke.controller
 
 jwt:
-  secret: ${JWT_SECRET:locke_wiki_secret_key_fixed_version_2026_provide_long_enough_string}
   expiration: 604800000
 
 # debug: true
