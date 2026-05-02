@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,8 +49,7 @@ public class UserController {
 
     @Operation(summary = "用户注册", description = "创建新用户账号")
     @PostMapping("/register")
-    public Result<String> register(@RequestBody RegisterDTO registerDTO) {
-
+    public Result<String> register(@Validated @RequestBody RegisterDTO registerDTO) {
         userService.register(registerDTO);
         return Result.success("注册成功");
     }
