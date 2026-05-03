@@ -137,16 +137,26 @@
                     },
                     backpackFilter: {
                         name: '',
-                        type: ''
+                        type: '',
+                        current: 1,
+                        size: 100
                     }
                 }
             },
             async created() {
                 const token = localStorage.getItem("token");
+
                 if (token) {
-                    this.checkLoginStatus();//本地无 Token，保持未登录状态否则检查登录状态
-                } 
-                await this.fetchBackpack();
+                    // await 确保登录状态更新完成
+                    await this.checkLoginStatus();
+                }
+
+                // 只有确认登录后，fetchBackpack 内部的 if (!this.isLoggedIn) 才会通过
+                if (this.isLoggedIn) {
+                    await this.fetchBackpack();
+                }
+
+                // 最后获取主列表
                 this.fetchList();
             },
             methods: {

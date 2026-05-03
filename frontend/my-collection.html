@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="./css/my-collection.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
@@ -48,13 +49,20 @@
             </section>
 
             <div v-if="!isLoggedIn" class="empty-state">
-                <img src="./img/lock-icon.png" alt="未登录">
+                <div class="login-status">
+                    <!-- lock-keyhole 代表锁头图标 -->
+                    <i data-lucide="lock-keyhole" style="color: #888787; width: 24px; height: 24px;"></i>
+                    <span>未登录</span>
+                </div>
                 <p>只有登录后的训练师才能开启冒险手册</p>
             </div>
 
             <div v-else-if="filteredPets.length === 0" class="empty-state">
-                <img src="./img/empty-backpack.png" alt="空空如也">
-                <p>还没有精灵加入你的队伍，快去<a href="./home.html">捕获</a>吧！</p>
+                <div style="text-align: center; color: #999;">
+                    <i data-lucide="package-open" style="width: 48px; height: 48px;"></i>
+                    <p>空空如也</p>
+                </div>
+                <p>还没有精灵加入你的队伍，快去<a href="./index.html">捕获</a>吧！</p>
             </div>
 
             <transition-group name="grid" tag="div" class="pet-grid" v-else>
@@ -78,6 +86,7 @@
     </div>
 
     <script type="module">
+        lucide.createIcons();
         import CommonHeader from './js/components/header/HeaderContainer.js';
         import { getUserBackpack, removeFromBackpack, getCurrentUserInfo } from './js/api/index.js';
         import { getImageUrl } from './js/config.js';

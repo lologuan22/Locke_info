@@ -2,7 +2,8 @@ package com.newblash.locke.service.impl;
 
 import com.newblash.locke.exception.BaseException;
 import com.newblash.locke.service.FileService;
-import org.springframework.beans.factory.annotation.Value;
+import com.newblash.locke.utils.PathUtils;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import net.coobird.thumbnailator.Thumbnails;
@@ -14,31 +15,29 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
-    @Value("${file.avatar-path}")
-    private String avatarPath;
-
     @Override
     public String uploadAvatar(MultipartFile file) {
         validateFile(file);
 
-        // 1. 生成唯一的 BaseName
+        // 1. 生成唯一 ID
         String uuid = UUID.randomUUID().toString();
 
         try {
-            // 2. 将 uuid 传递给磁盘保存方法
-            saveToDisk(file, uuid);
+            // 2. 获取动态存储路径
+            String storagePath = PathUtils.getAvatarStoragePath();
+            saveToDisk(file, uuid, storagePath);
 
-            // 3. 返回前端约定的路径
+            // 3. 返回前端访问的前缀（与 WebConfig 中的 addResourceHandler 对应）
             return "/api/avatars/" + uuid + ".webp";
         } catch (IOException e) {
             throw new BaseException("磁盘写入失败: " + e.getMessage());
         }
     }
 
-    private void saveToDisk(MultipartFile file, String baseName) throws IOException {
-        File destDir = new File(avatarPath);
+    private void saveToDisk(MultipartFile file, String baseName, String storagePath) throws IOException {
+        File destDir = new File(storagePath);
         if (!destDir.exists() && !destDir.mkdirs()) {
-            throw new IOException("无法创建目录: " + avatarPath);
+            throw new IOException("无法创建目录: " + storagePath);
         }
 
         Thumbnails.of(file.getInputStream())

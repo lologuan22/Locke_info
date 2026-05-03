@@ -1,6 +1,6 @@
 /* 容器设计 */
 .collection-page {
-    background: #f0f2f5 url('../img/bg-pattern.png'); /* 建议用淡雅的纹理 */
+    background: #f0f2f5; /* 建议用淡雅的纹理 */
     min-height: 100vh;
 }
 

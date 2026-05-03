@@ -13,7 +13,6 @@ import com.newblash.locke.vo.LoginVO;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.newblash.locke.utils.PasswordUtil;
@@ -100,12 +99,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return user;
     }
-
-    @Value("${file.upload-path}")
-    private String commonPath; // 用于通用图片
-
-    @Value("${file.avatar-path}")
-    private String avatarPath; // 用于头像图片
 
     @Override
     @Transactional
