@@ -8,7 +8,7 @@ export default {
         <AuthModal :show="showModal" @close="showModal = false" @success="handleAuthSuccess" />
         <div class="top">
             <div class="topp">
-                <a href="./home.html"><img src="./img/imglogo.png" class="logo" width="60%"></a>
+                <a href="./index.html"><img src="./img/imglogo.png" class="logo" width="60%"></a>
                 
                 <a v-if="!isLoggedIn" class="log" @click="showModal = true">登录/注册</a>
                 <UserPanel v-else :userInfo="userInfo" :avatarUrl="userAvatarUrl" @update="onUserUpdate" />

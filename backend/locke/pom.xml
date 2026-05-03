@@ -123,6 +123,13 @@
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.graalvm.buildtools</groupId>
+				<artifactId>native-maven-plugin</artifactId>
+				<extensions>true</extensions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -147,6 +154,77 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+
+			<!-- 1. 自动复制 data 文件夹和 Jar 到 dist 目录 -->
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>prepare-dist-folder</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist/data</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/data</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-jar-to-dist</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/dist</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<includes>
+										<include>${project.build.finalName}.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- 2. 执行 jlink 和 jpackage 脚本 -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>jpackage-bundle</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<executable>powershell</executable>
+							<arguments>
+								<argument>-ExecutionPolicy</argument>
+								<argument>Bypass</argument>
+								<argument>-File</argument>
+								<!-- 调用外部脚本文件 -->
+								<argument>${project.basedir}/build-package.ps1</argument>
+								<!-- 传递 Maven 变量作为参数 -->
+								<argument>${project.build.directory}</argument>
+								<argument>${project.build.finalName}</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

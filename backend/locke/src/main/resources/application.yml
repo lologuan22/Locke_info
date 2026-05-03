@@ -42,7 +42,3 @@ jwt:
 logging:
   file:
     name: startup.log
-
-file:
-  access-path: /api/images/**
-  avatar-access-path: /api/avatars/**
