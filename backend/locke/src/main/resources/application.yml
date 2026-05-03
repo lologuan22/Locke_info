@@ -16,7 +16,34 @@ spring:
   threads:
     virtual:
       enabled: true
+  # 数据库连接配置
+  datasource:
+    # url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    url: jdbc:h2:file:./data/locke_db;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=MySQL
+    # 如果使用文件模式，支持动态查看运行时数据库，但每次启动jpa都会覆盖之前的数据，需要关闭自动插入数据功能
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
 
+      # H2 控制台配置
+  h2:
+    console:
+      enabled: false
+
+  # JPA/Hibernate 相关配置
+  jpa:
+    defer-datasource-initialization: true #  Hibernate 先自动建表，再由 data.sql 插入数据
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update # 自动根据 Entity 类生成/更新表结构
+    show-sql: true # 在控制台打印 SQL 语句，方便调试
+
+  sql:
+    init:
+      mode: always
+      # 无需指定 schema.sql，直接由 Hibernate 根据 Entity 类生成表结构
+      data-locations: classpath:data.sql
+      continue-on-error: true
 server:
   port: 8080
   address: 0.0.0.0
