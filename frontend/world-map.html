@@ -384,36 +384,40 @@
                 },
                 async fetchBackpackIds() {
                     if (!this.isLoggedIn) return;
-                    const data = await handleApi(getUserBackpack({ name: '', type: '' }));
+                    const data = await handleApi(getUserBackpack({ name: '', type: '', size: 999 }));
                     if (data) {
                         const list = data.records || data;
-                        this.backpackIds = new Set(list.map(p => p.id));
+                        this.backpackIds = new Set(list.map(p => String(p.id)));
                     }
                 },
+
                 async fetchList() {
                     const data = await handleApi(getPokemonList(this.filter));
                     if (data) {
                         const list = data.records || data;
                         this.allPets = list.map(pet => ({
                             ...pet,
-                            isOwned: this.backpackIds.has(pet.id)
+                            isOwned: this.backpackIds.has(String(pet.id))
                         }));
                     }
                 },
+
                 async toggleBackpack(pet) {
                     if (!this.isLoggedIn) return alert('请先登录后再收藏精灵');
+
+                    const petIdStr = String(pet.id);
 
                     if (pet.isOwned) {
                         const res = await handleApi(removeFromBackpack(pet.id));
                         if (res !== null) {
                             pet.isOwned = false;
-                            this.backpackIds.delete(pet.id);
+                            this.backpackIds.delete(petIdStr);
                         }
                     } else {
                         const res = await handleApi(addToBackpack(pet.id));
                         if (res !== null) {
                             pet.isOwned = true;
-                            this.backpackIds.add(pet.id);
+                            this.backpackIds.add(petIdStr);
                         }
                     }
                 },
