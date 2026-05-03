@@ -28,7 +28,7 @@ spring:
       # H2 控制台配置
   h2:
     console:
-      enabled: false
+      enabled: true
 
   # JPA/Hibernate 相关配置
   jpa:
