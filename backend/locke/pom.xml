@@ -66,6 +66,14 @@
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!--  H2 数据库依赖 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -128,26 +136,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.graalvm.buildtools</groupId>
-				<artifactId>native-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.newblash.locke.LockeApplication</mainClass>
-					<imageName>locke-app</imageName>
-					<buildArgs>
-						<!-- 核心：强制这几个类在运行时才初始化，避免 NullPointerException -->
-						<buildArg>--initialize-at-run-time=org.apache.ibatis.logging.LogFactory</buildArg>
-						<buildArg>--initialize-at-run-time=org.apache.ibatis.logging.slf4j.Slf4jImpl</buildArg>
-						<!-- 如果报错还存在，加上下面这一行 -->
-						<buildArg>
-							--initialize-at-run-time=org.mybatis.spring.mapper.ClassPathMapperScanner</buildArg>
-					</buildArgs>
-					<configurationArgs>
-						<arg>
-							-H:ConfigurationFileDirectories=${project.basedir}/target/META-INF/native-image</arg>
-					</configurationArgs>
-				</configuration>
-			</plugin>
 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
