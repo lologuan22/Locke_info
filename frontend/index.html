@@ -142,7 +142,10 @@
                 }
             },
             async created() {
-                await this.checkLoginStatus();
+                const token = localStorage.getItem("token");
+                if (token) {
+                    this.checkLoginStatus();//本地无 Token，保持未登录状态否则检查登录状态
+                } 
                 await this.fetchBackpack();
                 this.fetchList();
             },
