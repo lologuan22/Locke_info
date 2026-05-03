@@ -18,8 +18,8 @@ spring:
       enabled: true
   # 数据库连接配置
   datasource:
-    # url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
-    url: jdbc:h2:file:./data/locke_db;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=MySQL
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    # url: jdbc:h2:file:./data/locke_db;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=MySQL
     # 如果使用文件模式，支持动态查看运行时数据库，但每次启动jpa都会覆盖之前的数据，需要关闭自动插入数据功能
     driver-class-name: org.h2.Driver
     username: sa
