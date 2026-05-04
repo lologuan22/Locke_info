@@ -138,7 +138,7 @@ API测试：
 
 │ HTML/CSS/JS  │    ◄──►     │   Spring Boot    │   ◄──►    │    MySQL    │
 
-│  Chart.js    │             │  MyBatis Plus    │           │             │
+│  Chart.js    │             │   MyBatis Plus   │           │             │
 
 │  Fetch API   │             │ Spring Security  │           └─────────────┘
 
