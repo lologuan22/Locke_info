@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL COMMENT '密码',
     email VARCHAR(100) UNIQUE COMMENT '邮箱',
     nickname VARCHAR(50) COMMENT '昵称',
-    avatar_url VARCHAR(255) DEFAULT '/images/avatars/default.png' COMMENT '头像URL',
+    avatar_url VARCHAR(255) DEFAULT '/api/avatars/default.png' COMMENT '头像URL',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     last_login TIMESTAMP NULL COMMENT '最后登录时间',
