@@ -223,7 +223,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>powershell</executable>
+							<executable>pwsh</executable>
 							<arguments>
 								<argument>-ExecutionPolicy</argument>
 								<argument>Bypass</argument>
@@ -250,7 +250,7 @@
 							<goal>exec</goal>
 						</goals>
 						<configuration>
-							<executable>powershell</executable>
+							<executable>pwsh</executable>
 							<arguments>
 								<argument>-ExecutionPolicy</argument>
 								<argument>Bypass</argument>
