@@ -293,6 +293,27 @@
             /* 配合 grid 布局，可能需要限制离开时的宽度 */
             width: var(--pet-card-size);
         }
+
+        /* 强制修正弹窗容器 */
+#app .modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 9999 !important; /* 确保在最上层 */
+}
+
+/* 确保内部卡片不会过高 */
+.modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
     </style>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
