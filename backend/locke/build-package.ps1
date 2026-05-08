@@ -28,7 +28,7 @@ $env:Path = "$javaBin;" + $env:Path
 $distDir = Join-Path $targetDir "dist"
 $runtimeDir = Join-Path $targetDir "custom-runtime"
 $outputDir = Join-Path $targetDir "installer"
-$jarPath = Join-Path $distDir "$finalName.jar"
+# $jarPath = Join-Path $distDir "$finalName.jar"
 
 # --- 2. 清理旧构建 ---
 Write-Host "--- Pre-check: Closing existing app ---" -ForegroundColor Gray
