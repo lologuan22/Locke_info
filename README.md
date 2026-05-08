@@ -216,8 +216,7 @@ Locke_info/
    java -jar target/locke-0.0.1-SNAPSHOT.jar
    ```
 
-### Docker部署 (可选)
-项目支持Docker容器化部署，详情请参考部署文档。
+
 
 ---
 
