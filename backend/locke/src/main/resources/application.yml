@@ -64,6 +64,7 @@ springdoc:
 
 jwt:
   expiration: 604800000
+  secret: ${JWT_SECRET:locke_wiki_secret_key_fixed_version_2026_provide_long_enough_string}
 
 # debug: true
 logging:

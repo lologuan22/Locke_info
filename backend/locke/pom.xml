@@ -141,7 +141,7 @@
 
 	<build>
 		<plugins>
-
+			<!-- 1. Spring Boot 插件 -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -154,6 +154,8 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+			<!-- 2. 编译插件 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -168,7 +170,7 @@
 				</configuration>
 			</plugin>
 
-			<!--  自动复制 data 文件夹和 Jar 到 dist 目录 -->
+			<!-- 3. 资源处理插件：自动复制 data 文件夹和 Jar 到 dist 目录 -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
@@ -210,12 +212,13 @@
 				</executions>
 			</plugin>
 
-			<!--  执行前端构建脚本 -->
+			<!-- 4. Exec 插件：前端构建和 JPackage 打包 -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>3.1.0</version>
 				<executions>
+					<!-- 任务 A: 构建前端 -->
 					<execution>
 						<id>run-powershell-script</id>
 						<phase>generate-resources</phase>
@@ -235,14 +238,7 @@
 							</successCodes>
 						</configuration>
 					</execution>
-				</executions>
-			</plugin>
-			<!--  执行 jlink 和 jpackage 脚本 -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
+					<!-- 任务 B: 打包安装包 -->
 					<execution>
 						<id>jpackage-bundle</id>
 						<phase>package</phase>
@@ -253,11 +249,10 @@
 							<executable>pwsh</executable>
 							<arguments>
 								<argument>-ExecutionPolicy</argument>
+								<!-- 注意这里：去掉了 Bypass 前面的横杠 -->
 								<argument>Bypass</argument>
 								<argument>-File</argument>
-								<!-- 调用外部脚本文件 -->
 								<argument>${project.basedir}/build-package.ps1</argument>
-								<!-- 传递 Maven 变量作为参数 -->
 								<argument>${project.build.directory}</argument>
 								<argument>${project.build.finalName}</argument>
 							</arguments>
@@ -267,5 +262,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
